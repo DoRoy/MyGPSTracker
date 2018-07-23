@@ -24,7 +24,7 @@ public class BackgroundService extends Service {
     Timer timer;
     public static ILocation gpsLocation;
     public static int timesToTakeLocation;
-    public static int intervalsInMinutes;
+    public static double intervalsInMinutes;
 
 /*    public BackgroundService(Application app, int timeToTakeLocation, int intervalsInMinutes) {
         this.app = app;
@@ -62,7 +62,7 @@ public class BackgroundService extends Service {
             }
         };
         timer = new Timer(true);
-        timer.scheduleAtFixedRate(timerTask,0, intervalsInMinutes * 60 /*minutes*/ * 1000 /*seconds*/);
+        timer.scheduleAtFixedRate(timerTask,0, (int)(intervalsInMinutes * 60 /*minutes*/ * 1000 /*seconds*/));
         return super.onStartCommand(intent,flags,startID);
     }
 
