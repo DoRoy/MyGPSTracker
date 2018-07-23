@@ -13,70 +13,59 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+
+import java.util.List;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.locks.ReentrantLock;
+
+
 /**
  * Created by doroy on 18-Jul-18.
  */
 public class GPSLocation implements ILocation {
 
-    Location lastLocation;
-    double latitude;
-    double longitude;
-    LocationManager locationManager;
-    AppCompatActivity application;
 
-    public GPSLocation(AppCompatActivity application){
-        locationManager = (LocationManager) application.getSystemService(Context.LOCATION_SERVICE);
+    private Semaphore semaphore;
+    LocationManager mLocationManager;
+    AppCompatActivity application;
+    private FusedLocationProviderClient mFusedLocationClient;
+    Location lastLocation;
+
+    public GPSLocation(AppCompatActivity application) {
         this.application = application;
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(application);
+        semaphore = new Semaphore(1);
     }
 
-
-    public void getLocation() {
-
+    public Location getLastKnownLocation(){
         boolean fineLocation = ActivityCompat.checkSelfPermission(application, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED;
         boolean coarseLocation = ActivityCompat.checkSelfPermission(application, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED;
 
         if (fineLocation && coarseLocation) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return;
+            ActivityCompat.requestPermissions(application, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, 2);
         }
-        if (isLocationEnabled()) {
-            locationManager.requestSingleUpdate(LocationManager.GPS_PROVIDER,  new LocationListener(){
-                @Override
-                public void onLocationChanged(Location location) {
-                    latitude = location.getLatitude();
-                    longitude = location.getLongitude();
-                    lastLocation = location;
-                }
-
-                @Override
-                public void onStatusChanged(String provider, int status, Bundle extras) {
-
-                }
-
-                @Override
-                public void onProviderEnabled(String provider) {
-
-                }
-
-                @Override
-                public void onProviderDisabled(String provider) {
-
-                }
-            }, null);
-        }
-
+        Task<Location> task = mFusedLocationClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
+            @Override
+            public void onSuccess(Location location) {
+                //semaphore.release();
+            }
+        });
+/*        try {
+            semaphore.acquire();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }*/
+        while(!task.isComplete());
+        Location ll = task.getResult();
+        return ll;
     }
 
-    @Override
-    public Location getLastLocation() {
-        return lastLocation;
-    }
+
 
     @Override
     /**
@@ -92,7 +81,7 @@ public class GPSLocation implements ILocation {
         return ans;
     }
 
-    private double meanLongtitude(Location[] locations) {
+/*    private double meanLongtitude(Location[] locations) {
         double meanLon = 0, cosLon = 0, sinLon = 0;
         for(int i = 0; i < locations.length; i++){
             sinLon += Math.sin(locations[i].getLongitude());
@@ -102,8 +91,18 @@ public class GPSLocation implements ILocation {
         cosLon = cosLon / locations.length;
         meanLon = Math.atan2(sinLon,cosLon);
         return meanLon;
-    }
+    }*/
 
+
+    private double meanLongtitude(Location[] locations){
+        double meanLong = 0;
+        for(int i = 0; i < locations.length; i ++){
+            meanLong += locations[i].getLongitude();
+        }
+        meanLong = meanLong / locations.length;
+        return meanLong;
+
+    }
     private double meanLatitude(Location[] locations){
         double meanLan = 0;
         for(int i = 0; i < locations.length; i ++){
@@ -113,9 +112,5 @@ public class GPSLocation implements ILocation {
         return meanLan;
     }
 
-
-    private boolean isLocationEnabled() {
-        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-    }
 
 }

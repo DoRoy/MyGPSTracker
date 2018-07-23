@@ -7,8 +7,7 @@ import android.location.Location;
  */
 
 public interface ILocation {
-    void getLocation();
-    Location getLastLocation();
+    Location getLastKnownLocation();
 
     /**
      * @return: array format - {meanLantitude, meanLongtitude}

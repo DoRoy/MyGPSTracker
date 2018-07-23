@@ -2,6 +2,8 @@ package mygpstracker.android.mygpstracker;
 
 
 import android.os.Bundle;
+
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -10,6 +12,8 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import android.content.Intent;
+
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import android.support.v7.app.AppCompatActivity;
 /**
@@ -20,7 +24,7 @@ class Log {
 
     private static Log ourInstance;
 
-    private String fileName = "myLogFileText";
+
 
     public void setFile(File file) {
         this.file = file;
@@ -48,36 +52,46 @@ class Log {
     }
 
     public boolean write(String line){
-        if(!file.exists())
+        if(!file.exists()) {
             try {
                 file.createNewFile();
             } catch (IOException e) {
                 e.printStackTrace();
+                return false;
             }
+        }
         try {
-            BufferedWriter fileWriter = new BufferedWriter(new FileWriter(file));
-            fileWriter.flush();
+            OutputStreamWriter fileWriter = new OutputStreamWriter(new FileOutputStream(file,true));
+            //fileWriter.flush();
             fileWriter.write(line);
             fileWriter.flush();
             fileWriter.close();
+            return true;
         } catch (IOException e) {
             e.printStackTrace();
-            return false;
         }
-        return true;
+
+        return false;
     }
 
     public String read(){
-        String ans;
-        if(!file.exists())
+        String ans = "";
+        if(!file.exists()) {
             try {
                 file.createNewFile();
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        }
         try {
             BufferedReader fileReader = new BufferedReader(new FileReader(file));
-            ans = fileReader.readLine();
+            String temp = null;
+            temp = fileReader.readLine();
+            while(temp != null){
+                ans += temp +"\n";
+                temp = fileReader.readLine();
+            }
+            System.out.println("read  - "+ ans);
             fileReader.close();
             return ans;
         } catch (IOException e) {
