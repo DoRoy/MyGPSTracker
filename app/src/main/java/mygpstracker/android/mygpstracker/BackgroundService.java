@@ -1,16 +1,14 @@
 package mygpstracker.android.mygpstracker;
 
-import android.app.Application;
 import android.app.Service;
 import android.content.Intent;
 import android.location.Location;
 import android.os.IBinder;
-import android.os.SystemClock;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.Calendar;
 
 
 
@@ -24,7 +22,7 @@ public class BackgroundService extends Service {
     Timer timer;
     public static ILocation gpsLocation;
     public static int timesToTakeLocation;
-    public static int intervalsInMinutes;
+    public static double intervalsInMinutes;
 
 /*    public BackgroundService(Application app, int timeToTakeLocation, int intervalsInMinutes) {
         this.app = app;
@@ -62,7 +60,7 @@ public class BackgroundService extends Service {
             }
         };
         timer = new Timer(true);
-        timer.scheduleAtFixedRate(timerTask,0, intervalsInMinutes * 60 /*minutes*/ * 1000 /*seconds*/);
+        timer.scheduleAtFixedRate(timerTask,0, (int)(intervalsInMinutes * 60 /*minutes*/ * 1000 /*seconds*/));
         return super.onStartCommand(intent,flags,startID);
     }
 

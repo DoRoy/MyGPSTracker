@@ -15,17 +15,25 @@
         <TextView
             android:id="@+id/textView_mainActivity"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="408dp"
             android:layout_weight="1"
-            android:text="/@TextView" />
+            android:text="@string/textView_mainActivity" />
 
         <Button
             android:id="@+id/refresh_btn"
             android:layout_width="match_parent"
-            android:layout_height="102dp"
+            android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Refresh"
+            android:text="@string/refresh_btn"
             android:visibility="visible" />
+
+        <Button
+            android:id="@+id/currentLocation_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="get Current Location" />
+
     </LinearLayout>
 
 </android.support.constraint.ConstraintLayout>
