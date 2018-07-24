@@ -1,47 +1,38 @@
 package mygpstracker.android.mygpstracker;
 
 import android.Manifest;
-import android.app.Application;
-import android.content.Context;
 
 import android.content.pm.PackageManager;
 import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
-import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
-
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 
-import java.util.List;
-import java.util.concurrent.FutureTask;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.locks.ReentrantLock;
 
 
 /**
  * Created by doroy on 18-Jul-18.
+ * Implementing the strategy of getting a location using the GPS Sensor.
  */
 public class GPSLocation implements ILocation {
 
-
-    private Semaphore semaphore;
-    LocationManager mLocationManager;
     AppCompatActivity application;
     private FusedLocationProviderClient mFusedLocationClient;
-    Location lastLocation;
+
 
     public GPSLocation(AppCompatActivity application) {
         this.application = application;
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(application);
-        semaphore = new Semaphore(1);
     }
 
+    /**
+     * Gets the Current Location
+     * @return The Current Location
+     */
     public Location getLastKnownLocation(){
         boolean fineLocation = ActivityCompat.checkSelfPermission(application, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED;
         boolean coarseLocation = ActivityCompat.checkSelfPermission(application, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED;
@@ -52,36 +43,31 @@ public class GPSLocation implements ILocation {
         Task<Location> task = mFusedLocationClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
             @Override
             public void onSuccess(Location location) {
-                //semaphore.release();
             }
         });
-/*        try {
-            semaphore.acquire();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }*/
+
         while(!task.isComplete());
-        Location ll = task.getResult();
-        return ll;
+        Location location = task.getResult();
+        return location;
     }
 
 
 
     @Override
     /**
-     * @return: array format - {meanLantitude, meanLongtitude}
+     * @return: array format - {meanLatitude, meanLongitude}
      */
     public double[] getMeanLocation(Location[] locations) {
-        //todo implement
         double meanLon = 0, meanLan = 0;
 
-        meanLan = meanLatitude(locations);
-        meanLon = meanLongtitude(locations);
-        double[] ans = {meanLan, meanLon};
+/*      meanLan = meanLatitude(locations);
+        meanLon = meanLongitude(locations);*/
+
+        double[] ans = calculateMean(locations);
         return ans;
     }
 
-/*    private double meanLongtitude(Location[] locations) {
+/*    private double meanLongitude(Location[] locations) {
         double meanLon = 0, cosLon = 0, sinLon = 0;
         for(int i = 0; i < locations.length; i++){
             sinLon += Math.sin(locations[i].getLongitude());
@@ -93,16 +79,43 @@ public class GPSLocation implements ILocation {
         return meanLon;
     }*/
 
+    /**
+     * Calculate a simple mean of the Longitude and Latitude.
+     * @param locations - an array to locations
+     * @return - an array of double of the form: {meanLat,meanLong}.
+     */
+    private double[] calculateMean(Location[] locations){
+        double meanLong = 0;
+        double meanLat = 0;
+        for(int i = 0; i < locations.length; i ++){
+            meanLong += locations[i].getLongitude();
+            meanLat += locations[i].getLatitude();
+        }
+        meanLong = meanLong / locations.length;
+        meanLat = meanLat / locations.length;
+        double[] ans = {meanLat,meanLong};
+        return ans;
+    }
 
-    private double meanLongtitude(Location[] locations){
+    /**
+     * Calculates the mean Longitude
+     * @param locations - an array of locations
+     * @return the mean of the longitude from the locations.
+     */
+    private double meanLongitude(Location[] locations){
         double meanLong = 0;
         for(int i = 0; i < locations.length; i ++){
             meanLong += locations[i].getLongitude();
         }
         meanLong = meanLong / locations.length;
         return meanLong;
-
     }
+
+    /**
+     * Calculates the mean Latitude
+     * @param locations - an array of locations
+     * @return the mean of the Latitude from the locations.
+     */
     private double meanLatitude(Location[] locations){
         double meanLan = 0;
         for(int i = 0; i < locations.length; i ++){
@@ -111,6 +124,5 @@ public class GPSLocation implements ILocation {
         meanLan = meanLan / locations.length;
         return meanLan;
     }
-
 
 }

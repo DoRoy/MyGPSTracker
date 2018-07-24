@@ -6,6 +6,7 @@ import android.content.Intent;
 
 /**
  * Created by doroy on 23-Jul-18.
+ * Responsible to start the service as the phone turns on.
  */
 
 public class AutoStart extends BroadcastReceiver {
