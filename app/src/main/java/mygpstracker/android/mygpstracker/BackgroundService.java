@@ -48,10 +48,8 @@ public class BackgroundService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startID){
         Thread t = new Thread(()->{
-            //action();
             Looper.prepare();
             runWithTask();
-            //restartService();
         });
         //stopSelf();
         t.setDaemon(true);
@@ -60,14 +58,6 @@ public class BackgroundService extends Service {
         return START_NOT_STICKY;
     }
 
-    private void restartService() {
-        AlarmManager alarm = (AlarmManager)getSystemService(ALARM_SERVICE);
-        alarm.set(
-                alarm.RTC_WAKEUP,
-                System.currentTimeMillis() + (int)(samplePolicy.getIntervalsInMinutes() * 60 /*minutes*/ * 1000  /*seconds*/),
-                PendingIntent.getService(this, 0, new Intent(this, BackgroundService.class), 0)
-        );
-    }
 
     private void runWithTask(){
         TimerTask timerTask = new TimerTask() {
@@ -132,10 +122,4 @@ public class BackgroundService extends Service {
 
     }
 
-    @Override
-    public void onTaskRemoved(Intent rootIntent) {
-
-        restartService();
-        super.onTaskRemoved(rootIntent);
-    }
 }

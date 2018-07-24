@@ -73,12 +73,7 @@ public class MainActivity extends AppCompatActivity {
         };
         Timer timer = new Timer();
         timer.schedule(timerTask,10000);
-/*        AlarmManager alarm = (AlarmManager)getSystemService(ALARM_SERVICE);
-        alarm.set(
-                alarm.RTC_WAKEUP,
-                System.currentTimeMillis() + (int)(10000),
-                PendingIntent.getService(this, 0, new Intent(this, BackgroundService.class), 0)
-        );*/
+
     }
 
     // the reset button, resets the content of the location log
