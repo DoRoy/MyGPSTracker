@@ -9,11 +9,16 @@ import android.content.Intent;
 import android.location.Location;
 import android.os.Build;
 import android.os.IBinder;
+import android.os.Looper;
 import android.support.v4.app.NotificationCompat;
 
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Calendar;
+import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -43,10 +48,13 @@ public class BackgroundService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startID){
         Thread t = new Thread(()->{
-            action();
-            restartService();
+            //action();
+            Looper.prepare();
+            runWithTask();
+            //restartService();
         });
         //stopSelf();
+        t.setDaemon(true);
         t.start();
 
         return START_NOT_STICKY;
@@ -60,6 +68,18 @@ public class BackgroundService extends Service {
                 PendingIntent.getService(this, 0, new Intent(this, BackgroundService.class), 0)
         );
     }
+
+    private void runWithTask(){
+        TimerTask timerTask = new TimerTask() {
+            @Override
+            public void run() {
+                action();
+            }
+        };
+        Timer timer = new Timer(true);
+        timer.schedule(timerTask,0,(long)(samplePolicy.getIntervalsInMinutes() * 60 /*minutes*/ * 1000  /*seconds*/));
+    }
+
 
     private void action(){
         System.out.println("ACTION\n");
@@ -114,10 +134,7 @@ public class BackgroundService extends Service {
 
     @Override
     public void onTaskRemoved(Intent rootIntent) {
-/*        Intent restartServiceIntent = new Intent(getApplicationContext(),this.getClass());
-        restartServiceIntent.setPackage(getPackageName());
-        startService(restartServiceIntent);
-        super.onTaskRemoved(rootIntent);*/
+
         restartService();
         super.onTaskRemoved(rootIntent);
     }
