@@ -6,6 +6,7 @@ import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.os.Build;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -24,6 +25,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -31,6 +34,7 @@ public class MainActivity extends AppCompatActivity {
     public Button refresh_btn;
     public Button currentLocation_btn;
     private File file;
+
 
 
 
@@ -47,8 +51,8 @@ public class MainActivity extends AppCompatActivity {
         initializeListeners();
 
 
-        BackgroundService.timesToTakeLocation = 6; // initialize how many times to take the location in every single sample
-        BackgroundService.intervalsInMinutes = 0.5; // initialize the time intervals for taking location sample
+        SamplePolicy samplePolicy = new SamplePolicy(6,0.25);
+        BackgroundService.samplePolicy = samplePolicy;
         BackgroundService.gpsLocation = new GPSLocation(this); // initialize the strategy we want to take locations with
         file = getApplicationContext().getFileStreamPath("myLogFileText"); // get the file from the apps cache
         Log.getInstance().setFile(file); // set file as log file
@@ -61,12 +65,20 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // start the background service
-        AlarmManager alarm = (AlarmManager)getSystemService(ALARM_SERVICE);
+        TimerTask timerTask = new TimerTask() {
+            @Override
+            public void run() {
+                startService(new Intent(getApplicationContext(),BackgroundService.class));
+            }
+        };
+        Timer timer = new Timer();
+        timer.schedule(timerTask,10000);
+/*        AlarmManager alarm = (AlarmManager)getSystemService(ALARM_SERVICE);
         alarm.set(
                 alarm.RTC_WAKEUP,
                 System.currentTimeMillis() + (int)(10000),
                 PendingIntent.getService(this, 0, new Intent(this, BackgroundService.class), 0)
-        );
+        );*/
     }
 
     // the reset button, resets the content of the location log
@@ -105,8 +117,8 @@ public class MainActivity extends AppCompatActivity {
         GPSLocation gpsLocation = new GPSLocation(this);
         Location location = gpsLocation.getLastKnownLocation();
         textView_mainActivity.setText("Current Location:\n" +
-                                       "\tLATITUDE = " + location.getLatitude() +
-                                        "\n\tLONGITUDE = " + location.getLongitude());
+                                       "\t\tLATITUDE = " + location.getLatitude() +
+                                        "\n\t\tLONGITUDE = " + location.getLongitude());
     }
 
     /**
