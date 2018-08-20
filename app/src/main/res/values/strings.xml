@@ -1,6 +1,8 @@
 <resources>
     <string name="app_name">MyGPSTracker</string>
     <string name="refresh_btn">Refresh</string>
+    <string name="ok_btn">OK</string>
+    <string name="activity_setting">Settings</string>
     <string name="currentLocation_btn">Get Current Location</string>
     <string name="textView_mainActivity">Welcome</string>
 </resources>

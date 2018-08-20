@@ -18,7 +18,9 @@ class Log {
     private static Log ourInstance;
 
     public void setFile(File file) {
-        this.file = file;
+        synchronized (file) {
+            this.file = file;
+        }
     }
 
     private File file;
@@ -38,22 +40,24 @@ class Log {
      * @return - True if wrote the line, False if the were a problem and it didn't.
      */
     public boolean write(String line){
-        if(!file.exists()) {
+        synchronized (file) {
+            if (!file.exists()) {
+                try {
+                    file.createNewFile();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    return false;
+                }
+            }
             try {
-                file.createNewFile();
+                OutputStreamWriter fileWriter = new OutputStreamWriter(new FileOutputStream(file, true));
+                fileWriter.write(line);
+                fileWriter.flush();
+                fileWriter.close();
+                return true;
             } catch (IOException e) {
                 e.printStackTrace();
-                return false;
             }
-        }
-        try {
-            OutputStreamWriter fileWriter = new OutputStreamWriter(new FileOutputStream(file,true));
-            fileWriter.write(line);
-            fileWriter.flush();
-            fileWriter.close();
-            return true;
-        } catch (IOException e) {
-            e.printStackTrace();
         }
 
         return false;
@@ -65,26 +69,28 @@ class Log {
      */
     public String read(){
         String ans = "";
-        if(!file.exists()) {
+        synchronized (file) {
+            if (!file.exists()) {
+                try {
+                    file.createNewFile();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
             try {
-                file.createNewFile();
+                BufferedReader fileReader = new BufferedReader(new FileReader(file));
+                String temp = null;
+                temp = fileReader.readLine();
+                while (temp != null) {
+                    ans += temp + "\n";
+                    temp = fileReader.readLine();
+                }
+                //System.out.println("read  - "+ ans);
+                fileReader.close();
+                return ans;
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }
-        try {
-            BufferedReader fileReader = new BufferedReader(new FileReader(file));
-            String temp = null;
-            temp = fileReader.readLine();
-            while(temp != null){
-                ans += temp +"\n";
-                temp = fileReader.readLine();
-            }
-            //System.out.println("read  - "+ ans);
-            fileReader.close();
-            return ans;
-        } catch (IOException e) {
-            e.printStackTrace();
         }
         return null;
 

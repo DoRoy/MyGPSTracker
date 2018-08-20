@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Build;
@@ -25,6 +26,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -33,7 +37,16 @@ public class MainActivity extends AppCompatActivity {
     public TextView textView_mainActivity;
     public Button refresh_btn;
     public Button currentLocation_btn;
+
+    private final String MY_PREFS_NAME = "MyPrefs";
+    private final String INTERVALS = "INTERVALS";
+    private final String TIMESTOTAKELOCATION = "TIMESTOTAKELOCATION";
+
     private File file;
+    public static int timesToTakeLocation = 6;
+    public static double intervals = 0.25;
+    private SamplePolicy samplePolicy;
+    public static boolean didChanged = false;
 
 
 
@@ -49,9 +62,9 @@ public class MainActivity extends AppCompatActivity {
         textView_mainActivity = (TextView) findViewById(R.id.textView_mainActivity);
 
         initializeListeners();
+        initializeSharedPreferences();
 
-
-        SamplePolicy samplePolicy = new SamplePolicy(6,0.25);
+        samplePolicy = new SamplePolicy(timesToTakeLocation, intervals);
         BackgroundService.samplePolicy = samplePolicy;
         BackgroundService.gpsLocation = new GPSLocation(this); // initialize the strategy we want to take locations with
         file = getApplicationContext().getFileStreamPath("myLogFileText"); // get the file from the apps cache
@@ -64,6 +77,7 @@ public class MainActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, 2);
         }
 
+
         // start the background service
         TimerTask timerTask = new TimerTask() {
             @Override
@@ -72,29 +86,86 @@ public class MainActivity extends AppCompatActivity {
             }
         };
         Timer timer = new Timer();
-        timer.schedule(timerTask,10000);
+        timer.schedule(timerTask,1000);
 
     }
+
+
 
     // the reset button, resets the content of the location log
     @Override
     public boolean onOptionsItemSelected(MenuItem item){
         super.onOptionsItemSelected(item);
-        if(item.getItemId() == R.id.reset){
-
-            try {
-                OutputStreamWriter fileWriter = new OutputStreamWriter(new FileOutputStream(file));
-                fileWriter.write("");
-                fileWriter.close();
-                refresh();
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
+        int id = item.getItemId();
+        switch (id){
+            case R.id.reset:
+                try {
+                    OutputStreamWriter fileWriter = new OutputStreamWriter(new FileOutputStream(file));
+                    fileWriter.write("");
+                    fileWriter.close();
+                    refresh();
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                break;
+            case R.id.settings:
+                Intent settingsIntent = new Intent(this, Settings.class);
+                startActivity(settingsIntent);
+                System.out.println("after settings start activity");
+                break;
         }
+
         return true;
+    }
+
+    private void initializeSharedPreferences(){
+        SharedPreferences sharedPreferences = getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
+        Map<String, ?> map = sharedPreferences.getAll();
+        if(map != null && map.size() > 0) {
+            intervals = (Float) map.get(INTERVALS);
+            timesToTakeLocation = (Integer) map.get(TIMESTOTAKELOCATION);
+        }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        System.out.println("OnStart");
+        samplePolicy.setTimesToTakeLocation(timesToTakeLocation);
+        samplePolicy.setIntervalsInMinutes(intervals);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        System.out.println("onStop");
+        SharedPreferences.Editor editor = getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE).edit();
+        editor.putFloat(INTERVALS, (float)intervals);
+        editor.putInt(TIMESTOTAKELOCATION, timesToTakeLocation);
+        editor.apply();
+    }
+
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if(didChanged){
+            Date currentTime = Calendar.getInstance().getTime();
+            String[] dateArr = currentTime.toString().split(" ");
+            String timeAndDate = dateArr[1] + " " + dateArr[2] + " " + dateArr[5] + " " + dateArr[3];
+            Log.getInstance().write("\t** " + timeAndDate + ": Interval = " + intervals + ", Times = " + timesToTakeLocation + " **\n");
+            samplePolicy.setIntervalsInMinutes(intervals);
+            samplePolicy.setTimesToTakeLocation(timesToTakeLocation);
+
+            stopService(new Intent(getApplicationContext(),BackgroundService.class));
+            startService(new Intent(getApplicationContext(),BackgroundService.class));
+
+            didChanged = false;
+        }
+        refresh();
+
     }
 
     // initialize the reset button
@@ -122,10 +193,12 @@ public class MainActivity extends AppCompatActivity {
     public void refresh(){
         Thread t = new Thread(()->{
             String content = Log.getInstance().read();
-            this.runOnUiThread(()->textView_mainActivity.setText(content));
+            runOnUiThread(()->textView_mainActivity.setText(content));
         });
         t.start();
     }
+
+
 
     /**
      * Initialize the button listeners

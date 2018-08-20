@@ -5,4 +5,8 @@
         android:id="@+id/reset"
         android:title="Reset"
         app:showAsAction="always" />
+    <item
+        android:id="@+id/settings"
+        android:title="Settings"
+        app:showAsAction="always" />
 </menu>
