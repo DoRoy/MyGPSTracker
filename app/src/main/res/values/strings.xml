@@ -2,7 +2,11 @@
     <string name="app_name">MyGPSTracker</string>
     <string name="refresh_btn">Refresh</string>
     <string name="ok_btn">OK</string>
+    <string name="button_getCallLog">Get Call Log</string>
+    <string name="button_getData">Get Data</string>
+    <string name="button_alltypes">Get All Data</string>
     <string name="activity_setting">Settings</string>
+    <string name="activity_sensors">Sensors</string>
     <string name="currentLocation_btn">Get Current Location</string>
     <string name="textView_mainActivity">Welcome</string>
 </resources>

@@ -8,7 +8,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 
 public class SamplePolicy {
-    private AtomicInteger timesToTakeLocation = new AtomicInteger();
+    private static AtomicInteger timesToTakeLocation = new AtomicInteger();
     private volatile static Double intervalsInMinutes;
 
     public SamplePolicy(int timesToTakeLocation, double intervalsInMinutes) {
@@ -16,25 +16,25 @@ public class SamplePolicy {
         this.intervalsInMinutes = new Double(intervalsInMinutes);
     }
 
-    public int getTimesToTakeLocation() {
+    public static int getTimesToTakeLocation() {
         return timesToTakeLocation.get();
     }
 
-    public double getIntervalsInMinutes() {
+    public static double getIntervalsInMinutes() {
         double ans = 0;
-        synchronized (this.intervalsInMinutes){
+        synchronized (intervalsInMinutes){
             ans = intervalsInMinutes;
         }
         return ans;
     }
 
-    public void setTimesToTakeLocation(int timesToTakeLocation) {
-        this.timesToTakeLocation.set(timesToTakeLocation);
+    public static void setTimesToTakeLocation(int newTimesToTakeLocation) {
+        timesToTakeLocation.set(newTimesToTakeLocation);
     }
 
-    public void setIntervalsInMinutes(double intervalsInMinutes) {
-        synchronized (this.intervalsInMinutes){
-            this.intervalsInMinutes = intervalsInMinutes;
+    public static void setIntervalsInMinutes(double newIntervalsInMinutes) {
+        synchronized (intervalsInMinutes){
+            intervalsInMinutes = intervalsInMinutes;
         }
 
     }

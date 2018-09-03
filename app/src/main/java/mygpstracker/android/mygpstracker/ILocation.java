@@ -8,8 +8,9 @@ import android.location.Location;
  */
 
 public interface ILocation {
-    Location getLastKnownLocation();
 
+
+    Location getLastKnownLocation();
     /**
      * @return: array format - {meanLatitude, meanLongitude}
      */

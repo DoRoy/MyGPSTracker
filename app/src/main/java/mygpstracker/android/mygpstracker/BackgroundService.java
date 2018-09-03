@@ -1,23 +1,17 @@
 package mygpstracker.android.mygpstracker;
 
-import android.app.AlarmManager;
-import android.app.Notification;
-import android.app.PendingIntent;
+
 import android.app.Service;
-import android.content.ComponentName;
 import android.content.Intent;
 import android.location.Location;
-import android.os.Build;
 import android.os.IBinder;
 import android.os.Looper;
-import android.support.v4.app.NotificationCompat;
-import android.widget.TextView;
+
+
 
 import java.text.DecimalFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.Calendar;
-import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.Callable;
@@ -109,7 +103,8 @@ public class BackgroundService extends Service {
         Date currentTime = Calendar.getInstance().getTime();
         String[] dateArr = currentTime.toString().split(" ");
         String timeAndDate = dateArr[1] + " " + dateArr[2] + " " + dateArr[5] + " " + dateArr[3]; //Jul 23 2018 20:42:29
-        Log.getInstance().write(timeAndDate + ": LAT = " + df6.format(meanLocation[0]) + ", LON = " + df6.format(meanLocation[1]) + "\n");
+        //Log.getInstance().write(timeAndDate + ": LAT = " + df6.format(meanLocation[0]) + ", LON = " + df6.format(meanLocation[1]) + "\n");
+        Log.getInstance().writeWithResolver(timeAndDate, df6.format((meanLocation[0])), df6.format(meanLocation[1]));
     }
 
 
@@ -121,7 +116,7 @@ public class BackgroundService extends Service {
         timerTask.cancel();
         timer.purge();
         timer.cancel();
-        //super.onDestroy();
+        super.onDestroy();
 
 /*        AlarmManager alarm = (AlarmManager)getSystemService(ALARM_SERVICE);
         alarm.set(
@@ -131,5 +126,18 @@ public class BackgroundService extends Service {
         );*/
 
     }
+
+/*    private int getMonthNumber(String month){
+        switch(month){
+            case "Jan":
+            case "Feb":
+            case "Mar":
+            case "Apr":
+            case "May":
+            case "Jun":
+                case
+
+        }
+    }*/
 
 }
