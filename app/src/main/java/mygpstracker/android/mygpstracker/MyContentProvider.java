@@ -72,18 +72,15 @@ public class MyContentProvider extends ContentProvider {
 
         public DBHelper(Context context) {
             super(context, DATABASE_NAME, null, DATABASE_VERSION);
-            // TODO Auto-generated constructor stub
         }
 
         @Override
         public void onCreate(SQLiteDatabase db) {
-            // TODO Auto-generated method stub
             db.execSQL(CREATE_TABLE);
         }
 
         @Override
         public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-            // TODO Auto-generated method stub
             Log.w(DBHelper.class.getName(),
                     "Upgrading database from version " + oldVersion + " to "
                             + newVersion + ". Old data will be destroyed");
@@ -95,7 +92,6 @@ public class MyContentProvider extends ContentProvider {
 
     @Override
     public boolean onCreate() {
-        // TODO Auto-generated method stub
         Context context = getContext();
         dbHelper = new DBHelper(context);
 
@@ -111,7 +107,6 @@ public class MyContentProvider extends ContentProvider {
     @Override
     public Cursor query(Uri uri, String[] projection, String selection,
                         String[] selectionArgs, String sortOrder) {
-        // TODO Auto-generated method stub
         SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
         // the TABLE_NAME to query on
         queryBuilder.setTables(TABLE_NAME);
@@ -151,7 +146,6 @@ public class MyContentProvider extends ContentProvider {
 
     @Override
     public Uri insert(Uri uri, ContentValues values) {
-        // TODO Auto-generated method stub
         long row = database.insert(TABLE_NAME, "", values);
 
         // If record is added successfully
@@ -169,7 +163,6 @@ public class MyContentProvider extends ContentProvider {
     @Override
     public int update(Uri uri, ContentValues values, String selection,
                       String[] selectionArgs) {
-        // TODO Auto-generated method stub
         int count = 0;
 
         switch (uriMatcher.match(uri)){
@@ -191,7 +184,6 @@ public class MyContentProvider extends ContentProvider {
 
     @Override
     public int delete(Uri uri, String selection, String[] selectionArgs) {
-        // TODO Auto-generated method stub
         int count = 0;
 
         switch (uriMatcher.match(uri)){
@@ -217,7 +209,6 @@ public class MyContentProvider extends ContentProvider {
 
     @Override
     public String getType(Uri uri) {
-        // TODO Auto-generated method stub
         switch (uriMatcher.match(uri)){
             // Get all friend-birthday records
             case LOCATIONS:

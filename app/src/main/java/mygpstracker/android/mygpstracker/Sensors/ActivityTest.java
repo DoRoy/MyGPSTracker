@@ -23,7 +23,6 @@ import java.util.Map;
 
 import mygpstracker.android.mygpstracker.AppExecutors;
 import mygpstracker.android.mygpstracker.R;
-import mygpstracker.android.mygpstracker.SamplePolicy;
 
 /**
  * Created by doroy on 29-Aug-18.
@@ -37,7 +36,7 @@ public class ActivityTest extends AppCompatActivity {
     public Button button_getCallLog;
 
     private final String TAG = "ActivityTest";
-    Sensor3Axis sensor3Axis;
+    private ISensor sensor;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -51,6 +50,8 @@ public class ActivityTest extends AppCompatActivity {
     }
 
     private void initializeWidgetsAndListeners(){
+        sensor = new SensorContinuous(ASensorMeasures.sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER));
+
         textView = (TextView) findViewById(R.id.textView);
 
         button_getData = (Button) findViewById(R.id.button_getData);
@@ -62,7 +63,8 @@ public class ActivityTest extends AppCompatActivity {
                 Thread t = new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        Map<String, Double> map = sensor3Axis.getData();
+
+                        Map<String, Double> map = sensor.getData();
 
                         Log.d(TAG, "After getData()");
                         String temp = "";
@@ -100,6 +102,7 @@ public class ActivityTest extends AppCompatActivity {
 
                         for (ISensor sensor: list) {
                             String temp = "";
+                            Log.d(TAG, "Sensor: " + sensor.getName());
                             Map<String,Double> map = sensor.getData();
                             Log.d(TAG, "After getData()");
 
@@ -142,9 +145,9 @@ public class ActivityTest extends AppCompatActivity {
         int counter = 0;
         for (ISensor iSensor: list) {
             for(int i = 0; i < sensorsList.size();i ++) {
-
-                if(((ASensorMeasures)iSensor).sensorName.startsWith(sensorsList.get(i).getName())){
-                    print += "+ " +sensorsList.get(i).getName() + "\n";
+                String iSensorName = ((ASensorMeasures)iSensor).sensorName.substring(0,((ASensorMeasures)iSensor).sensorName.length()-1);
+                if(iSensorName.equals(sensorsList.get(i).getName())){
+                    print += "+ " + sensorsList.get(i).getName() + " - " + sensorsList.get(i).getReportingMode() + "\n";
                     arr[i] = 30;
                     counter++;
                 }
@@ -152,7 +155,7 @@ public class ActivityTest extends AppCompatActivity {
         }
         for(int i = 0; i < sensorsList.size();i ++){
             if(arr[i] != 30) {
-                print += "- " + sensorsList.get(i).getName() + "\n";
+                print += "- " + sensorsList.get(i).getName() + " - " + sensorsList.get(i).getReportingMode() + "\n";
             }
         }
         System.out.println(print);
@@ -165,12 +168,6 @@ public class ActivityTest extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-
-        //SamplePolicy.setTimesToTakeLocation(6);
-        sensor3Axis = new Sensor3Axis(ASensorMeasures.sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER));
-
-        System.out.println("FINISHED RUN");
-
     }
 
     private void getCallLog(){

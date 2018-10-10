@@ -39,8 +39,8 @@ public class BackgroundService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         return null;
-        /*// TODO: Return the communication channel to the service.
-        throw new UnsupportedOperationException("Not yet implemented");*/
+
+        //throw new UnsupportedOperationException("Not yet implemented");
     }
 
     @Override
@@ -103,8 +103,8 @@ public class BackgroundService extends Service {
         Date currentTime = Calendar.getInstance().getTime();
         String[] dateArr = currentTime.toString().split(" ");
         String timeAndDate = dateArr[1] + " " + dateArr[2] + " " + dateArr[5] + " " + dateArr[3]; //Jul 23 2018 20:42:29
-        //Log.getInstance().write(timeAndDate + ": LAT = " + df6.format(meanLocation[0]) + ", LON = " + df6.format(meanLocation[1]) + "\n");
-        Log.getInstance().writeWithResolver(timeAndDate, df6.format((meanLocation[0])), df6.format(meanLocation[1]));
+        //MyLog.getInstance().write(timeAndDate + ": LAT = " + df6.format(meanLocation[0]) + ", LON = " + df6.format(meanLocation[1]) + "\n");
+        MyLog.getInstance().writeWithResolver(timeAndDate, df6.format((meanLocation[0])), df6.format(meanLocation[1]));
     }
 
 
@@ -117,27 +117,8 @@ public class BackgroundService extends Service {
         timer.purge();
         timer.cancel();
         super.onDestroy();
-
-/*        AlarmManager alarm = (AlarmManager)getSystemService(ALARM_SERVICE);
-        alarm.set(
-                alarm.RTC_WAKEUP,
-                System.currentTimeMillis() + (int)(samplePolicy.getIntervalsInMinutes() * 60 *//*minutes*//* * 1000  *//*seconds*//*),
-                PendingIntent.getService(this, 0, new Intent(this, BackgroundService.class), 0)
-        );*/
-
     }
 
-/*    private int getMonthNumber(String month){
-        switch(month){
-            case "Jan":
-            case "Feb":
-            case "Mar":
-            case "Apr":
-            case "May":
-            case "Jun":
-                case
 
-        }
-    }*/
 
 }

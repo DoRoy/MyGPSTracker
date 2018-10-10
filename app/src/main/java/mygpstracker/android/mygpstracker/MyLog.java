@@ -14,13 +14,13 @@ import java.io.OutputStreamWriter;
 
 /**
  * Created by doroy on 18-Jul-18.
- * The location Log, saving the location and the date on a file.
+ * The location MyLog, saving the location and the date on a file.
  * implemented as Singleton.
  */
 
-class Log {
+class MyLog {
 
-    private static Log ourInstance;
+    private static MyLog ourInstance;
     private static ContentResolver contentResolver;
     private File file;
 
@@ -36,14 +36,14 @@ class Log {
 
 
 
-    static Log getInstance() {
+    static MyLog getInstance() {
         if(ourInstance == null) {
-            ourInstance = new Log();
+            ourInstance = new MyLog();
         }
         return ourInstance;
     }
 
-    private Log() {
+    private MyLog() {
     }
 
     /**
@@ -108,7 +108,7 @@ class Log {
     }
 
     /**
-     * Read the entire Log file content.
+     * Read the entire MyLog file content.
      * @return - A String containing all the log content.
      */
     public String read(){

@@ -12,7 +12,7 @@ import android.content.Intent;
 public class AutoStart extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
-        Log.getInstance().write("AutoStart\n");
+        MyLog.getInstance().write("AutoStart\n");
         context.startService(new Intent(context,BackgroundService.class));
     }
 

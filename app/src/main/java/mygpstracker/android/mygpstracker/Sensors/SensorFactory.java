@@ -2,7 +2,6 @@ package mygpstracker.android.mygpstracker.Sensors;
 
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
-import android.util.Log;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -15,42 +14,43 @@ public class SensorFactory {
 
     private final static String TAG = "SensorFactory";
 
-    private final static int axisType = 1;
-    private final static int pressureType = 2;
-    private final static int lightType = 3;
-    private final static int temperatureType = 4;
-    private final static int percentType = 5;
-    private final static int magneticType = 6;
+
+    private final static int ONE_VALUES = 1;
+    private final static int THREE_VALUES = 3;
+    private final static int SIX_VALUES = 6;
+
+
+/*    public static List<ISensor> getAllAvailableSensors(SensorManager sensorManager){
+        List<Sensor> sensorsList = sensorManager.getSensorList(Sensor.TYPE_ALL);
+        List<ISensor> mySensorsList = new LinkedList<>();
+        for (Sensor sensor: sensorsList) {
+            //Log.d(TAG, sensor.getName());
+            switch(getSensorsType(sensor.getType())){
+                case THREE_VALUES:
+                    mySensorsList.add(new Sensor3Axis(sensor));
+                    break;
+                case ONE_VALUES:
+                    mySensorsList.add(new Sensor1Values(sensor));
+                    break;
+                case SIX_VALUES:
+                    mySensorsList.add(new Sensor6Values(sensor));
+                    break;
+                default:
+                    break;
+
+            }
+
+        }
+        return mySensorsList;
+    }*/
+
 
     public static List<ISensor> getAllAvailableSensors(SensorManager sensorManager){
         List<Sensor> sensorsList = sensorManager.getSensorList(Sensor.TYPE_ALL);
         List<ISensor> mySensorsList = new LinkedList<>();
         for (Sensor sensor: sensorsList) {
-            Log.d(TAG, sensor.getName());
-            switch(getSensorsType(sensor.getType())){
-                case axisType:
-                    //mySensorsList.add(new Sensor3Axis(sensor.getName(), sensor.getType()));
-                    mySensorsList.add(new Sensor3Axis(sensor));
-                    break;
-                case pressureType:
-                    mySensorsList.add(new SensorTemprature(sensor));
-                    break;
-                case lightType:
-                    mySensorsList.add(new SensorTemprature(sensor));
-                    break;
-                case temperatureType:
-                    mySensorsList.add(new SensorTemprature(sensor));
-                    break;
-                case percentType:
-                    mySensorsList.add(new SensorTemprature(sensor));
-                    break;
-                case magneticType:
-
-                    break;
-
-                default:
-                    break;
-
+            if(sensor.getReportingMode() == Sensor.REPORTING_MODE_CONTINUOUS) {
+                mySensorsList.add(new SensorContinuous(sensor));
             }
 
         }
@@ -61,26 +61,41 @@ public class SensorFactory {
 
         if(type == Sensor.TYPE_ACCELEROMETER || type == Sensor.TYPE_GRAVITY ||
                 type == Sensor.TYPE_GYROSCOPE || type == Sensor.TYPE_LINEAR_ACCELERATION ||
-                type == Sensor.TYPE_ROTATION_VECTOR || type == Sensor.TYPE_MAGNETIC_FIELD ||
-                type == Sensor.TYPE_ORIENTATION || type == Sensor.TYPE_GEOMAGNETIC_ROTATION_VECTOR){
-            return axisType;
+                type == Sensor.TYPE_MAGNETIC_FIELD ||
+                type == Sensor.TYPE_ORIENTATION || type == Sensor.TYPE_ORIENTATION ){
+            return THREE_VALUES;
         }
-        else if (type == Sensor.TYPE_PRESSURE || type == Sensor.TYPE_PROXIMITY){
-            return pressureType;
+        else if (type == Sensor.TYPE_PRESSURE || type == Sensor.TYPE_PROXIMITY ||
+                type == Sensor.TYPE_LIGHT || type == Sensor.TYPE_AMBIENT_TEMPERATURE ||
+                type == Sensor.TYPE_TEMPERATURE || type == Sensor.TYPE_RELATIVE_HUMIDITY ||
+                type == Sensor.TYPE_STEP_COUNTER ){
+            return ONE_VALUES;
         }
-        else if(type == Sensor.TYPE_AMBIENT_TEMPERATURE || type == Sensor.TYPE_TEMPERATURE){
-            return temperatureType;
+        else if(type == Sensor.TYPE_GYROSCOPE_UNCALIBRATED || type == Sensor.TYPE_ACCELEROMETER_UNCALIBRATED ||
+                type == Sensor.TYPE_MAGNETIC_FIELD_UNCALIBRATED){
+            return SIX_VALUES;
         }
-        else if (type == Sensor.TYPE_LIGHT){
-            return lightType;
-        }
-        else if (type == Sensor.TYPE_RELATIVE_HUMIDITY){
-            return percentType;
-        }
-        else if(type == Sensor.TYPE_MAGNETIC_FIELD || type == Sensor.TYPE_GYROSCOPE_UNCALIBRATED || type == Sensor.TYPE_ACCELEROMETER_UNCALIBRATED){
-            return magneticType;
-        }
+/*
+Sensor.TYPE_ROTATION_VECTOR  - 5 values
+Sensor.TYPE_GEOMAGNETIC_ROTATION_VECTOR - 5 values
+Game Rotation Vector - 5 values
+
+AMD
+RMD
+Basic Gestures
+Facing
+Pedometer
+Motion Accel
+Coarse Motion Classifier
+Pocket Detect
+
+
+        */
         return 0;
 
     }
 }
+
+
+/* TODO - try to create subclasses of sensors for: Continues, On-Change, One-Shot, Special.
+* */

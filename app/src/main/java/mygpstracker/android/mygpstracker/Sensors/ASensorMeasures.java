@@ -37,6 +37,9 @@ public abstract class ASensorMeasures implements ISensor {
     public static final String MIN_VALUE = "min_value";
     public static final String MEAN_VALUE = "mean_value";
     public static final String MEDIAN_VALUE = "median_value";
+    public static final String DEVIATION_VALUE = "deviation_value";
+    public static final String POWER_VALUE = "power_value";
+    public static final String MAX_RANGE_VALUE = "maxRange_value";
 
     protected AtomicInteger atomicInteger = new AtomicInteger(-1);
     protected /*static*/ Semaphore semaphore = new Semaphore(0);
@@ -45,9 +48,9 @@ public abstract class ASensorMeasures implements ISensor {
 
     protected String TAG;
 
-    public ASensorMeasures(String sensorName) {
+/*    public ASensorMeasures(String sensorName) {
         this.sensorName = sensorName + "_";
-    }
+    }*/
 
     public ASensorMeasures(Sensor sensor){
         this.sensor = sensor;
@@ -77,10 +80,11 @@ public abstract class ASensorMeasures implements ISensor {
                     if(counter < 0){
                         counter = atomicInteger.getAndIncrement();
                     }
-                    initialValues(size);
+                    //initialValues(size);
+                    initialValues(size, event.values.length);
 
                 }
-                Log.d(TAG, "OnSensorChanged - Listener - " + counter + " received information at " + date + " " + sensorName);
+                //Log.d(TAG, "OnSensorChanged - Listener - " + counter + " received information at " + date + " " + sensorName);
 
                 setValues(event, counter);
 
@@ -103,14 +107,16 @@ public abstract class ASensorMeasures implements ISensor {
 
     private boolean specificCases(){
         int type = sensor.getType();
-        if(type == Sensor.TYPE_PROXIMITY){
-            // spcial case where it wont update the same time and need to change the size to 1
+        if(type == Sensor.TYPE_PROXIMITY || type == Sensor.TYPE_STEP_COUNTER){
+            // special case where it wont update the same time and need to change the size to 1
             return true;
         }
         return false;
     }
 
     public abstract void initialValues(int size);
+
+    public abstract void initialValues(int timesToTakeMesures, int valuesNumber);
 
     public abstract void setValues(SensorEvent event, int index);
 
@@ -200,6 +206,57 @@ public abstract class ASensorMeasures implements ISensor {
             sum += data[i];
         }
         return sum / data.length;
+    }
+
+    protected double getDeviation(@NonNull float[] data){
+        double sum = 0;
+        double mean = getMean(data);
+        for(int i = 0; i < data.length; i ++){
+            sum += Math.pow(data[i] - mean, 2);
+        }
+        return Math.sqrt(sum / data.length);
+    }
+
+    protected double getRange(@NonNull float[] data){
+        return getMax(data) - getMin(data);
+    }
+
+    protected double getCorrelationBetweenTwoAxis(@NonNull float[] data1, @NonNull float[] data2){
+        double data1_mean = getMean(data1);
+        double data2_mean = getMean(data2);
+        double mone = 0, mechane1 = 0, mechane2 = 0;
+        for(int i = 0; i < data1.length; i ++){
+            mone += (data1[i] - data1_mean) * (data2[i] - data2_mean);
+            mechane1 += Math.pow(data1[i] - data1_mean, 2);
+            mechane2 += Math.pow(data2[i] - data2_mean, 2);
+        }
+        return mone / Math.sqrt(mechane1 * mechane2);
+    }
+
+    protected  Map<String, Double> getCorrelations(float[][] data){
+        Map<String, Double> map =  new Hashtable<>(15);
+        for(int i = 0; i < data.length - 1; i ++){
+            for(int j = i + 1; j <data.length; j ++){
+                map.put(sensorName + "Correlation_" + i + "_" + j, getCorrelationBetweenTwoAxis(data[i], data[j]));
+            }
+        }
+
+
+        return map;
+    }
+
+
+    protected double getMaximumRange(){
+        return sensor.getMaximumRange();
+    }
+
+    protected double getPower(){
+        return sensor.getPower();
+    }
+
+    @Override
+    public String getName(){
+        return sensorName;
     }
 
 }

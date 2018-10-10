@@ -87,12 +87,13 @@ public class GPSLocation implements ILocation {
     private double[] calculateMean(Location[] locations){
         double meanLong = 0;
         double meanLat = 0;
-        for(int i = 0; i < locations.length; i ++){
+        int i = 0;
+        for(i = 0; i < locations.length && locations[i] != null; i ++){
             meanLong += locations[i].getLongitude();
             meanLat += locations[i].getLatitude();
         }
-        meanLong = meanLong / locations.length;
-        meanLat = meanLat / locations.length;
+        meanLong = meanLong / i;
+        meanLat = meanLat / i;
         double[] ans = {meanLat,meanLong};
         return ans;
     }
@@ -124,5 +125,7 @@ public class GPSLocation implements ILocation {
         meanLan = meanLan / locations.length;
         return meanLan;
     }
+
+    //TODO - check if i can get a location, and not lastKnownLocation,so we won't receive null
 
 }

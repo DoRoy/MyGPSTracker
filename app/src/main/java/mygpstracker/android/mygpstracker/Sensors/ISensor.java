@@ -9,4 +9,6 @@ import java.util.Map;
 public interface ISensor {
 
     Map<String,Double> getData();
+
+    String getName();
 }
