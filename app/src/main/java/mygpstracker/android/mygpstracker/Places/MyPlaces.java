@@ -123,21 +123,13 @@ public class MyPlaces extends Activity implements GoogleApiClient.ConnectionCall
 
     private void setPlacesList(PlaceLikelihoodBuffer likelyPlaces) {
         Log.d(TAG, "setPlacesList");
-        synchronized (places) {
-            PlaceLikelihood placeLikelihood = likelyPlaces.get(0);
-            if (placeLikelihood != null) {
-                places.clear();
-                places.put(placeLikelihood.getPlace(),placeLikelihood.getLikelihood());
-                try {
-                    for (int i = 1; likelyPlaces.get(i) != null && likelyPlaces.get(i).getPlace() != null; i++) {
-                        placeLikelihood = likelyPlaces.get(i);
-                        places.put(placeLikelihood.getPlace(),placeLikelihood.getLikelihood());
-                    }
-                } catch (IllegalStateException e) {
-                    e.printStackTrace();
-                }
-            }
 
+        synchronized (places) {
+            int size = likelyPlaces.getCount();
+            for(int i = 0; i < size; i++){
+                PlaceLikelihood placeLikelihood = likelyPlaces.get(i);
+                places.put(placeLikelihood.getPlace(),placeLikelihood.getLikelihood());
+            }
             places.notifyAll();
         }
     }
@@ -268,7 +260,6 @@ public class MyPlaces extends Activity implements GoogleApiClient.ConnectionCall
         return photoBitmap;
     }
 
-    //TODO - get details like opening hours - https://github.com/googlemaps/google-maps-services-java
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {

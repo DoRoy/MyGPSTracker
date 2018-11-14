@@ -1,13 +1,10 @@
 package mygpstracker.android.mygpstracker.Sensors;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.ContentResolver;
 import android.content.Context;
-import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.provider.CallLog;
-import android.support.v4.app.ActivityCompat;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -44,6 +41,7 @@ public class CallLogInformation {
     public void printCallLog(){
         printCallLog(null,null,null,null);
     }
+
 
     public void printCallLog(String[] projection, String selection, String[] selectionArgs, String SortOrder) {
         StringBuffer sb = new StringBuffer();
@@ -101,7 +99,6 @@ public class CallLogInformation {
      * */
     public List<String[]> query(String[] projection, String selection, String[] selectionArgs, String SortOrder){
         List<String[]> list = new ArrayList<>();
-
         @SuppressLint("MissingPermission") Cursor managedCursor = managedQuery.query(CallLog.Calls.CONTENT_URI, projection, selection, selectionArgs, SortOrder);
         int number = managedCursor.getColumnIndex(CallLog.Calls.NUMBER);
         int type = managedCursor.getColumnIndex(CallLog.Calls.TYPE);

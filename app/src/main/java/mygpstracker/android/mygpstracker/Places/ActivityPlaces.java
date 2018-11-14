@@ -253,7 +253,8 @@ public class ActivityPlaces extends AppCompatActivity {
             placeInfo += "\tID: "  + currentPlace.getId() + "\n";
             placeInfo += "\tLatLon: "  + currentPlace.getLatLng().latitude + ", " + currentPlace.getLatLng().longitude + "\n";
             placeInfo += "\tAddress: " + currentPlace.getAddress() + "\n";
-            placeInfo += "\tAttribution: " + currentPlace.getAttributions() + "\n";
+            if(currentPlace.getAttributions() != null)
+                placeInfo += "\tAttribution: " + currentPlace.getAttributions() + "\n";
             placeInfo += "\tRating: " + currentPlace.getRating() + "\n";
             placeInfo += "\tPhone: " + currentPlace.getPhoneNumber() + "\n";
             placeInfo += "\tPrice Level: " + currentPlace.getPriceLevel() + "\n";
