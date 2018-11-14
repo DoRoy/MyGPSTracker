@@ -7,6 +7,7 @@
     <string name="button_alltypes">Get All Data</string>
     <string name="activity_setting">Settings</string>
     <string name="activity_sensors">Sensors</string>
+    <string name="activity_places">Places</string>
     <string name="currentLocation_btn">Get Current Location</string>
     <string name="textView_mainActivity">Welcome</string>
 </resources>

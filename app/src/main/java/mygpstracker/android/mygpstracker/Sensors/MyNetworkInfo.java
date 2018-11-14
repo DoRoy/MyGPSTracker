@@ -34,8 +34,8 @@ public class MyNetworkInfo {
                 isMobileConn |= networkInfo.isConnected();
             }
         }
-        Log.d(TAG, "Wifi connected: " + isWifiConn);
-        Log.d(TAG, "Mobile connected: " + isMobileConn);
+/*        Log.d(TAG, "Wifi connected: " + isWifiConn);
+        Log.d(TAG, "Mobile connected: " + isMobileConn);*/
     }
 
     public boolean isOnline() {

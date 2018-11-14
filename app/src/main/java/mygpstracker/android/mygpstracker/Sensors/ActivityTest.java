@@ -42,10 +42,10 @@ public class ActivityTest extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_test);
+        ASensorMeasures.sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
 
         initializeWidgetsAndListeners();
 
-        ASensorMeasures.sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
 
     }
 

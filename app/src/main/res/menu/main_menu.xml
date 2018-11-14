@@ -12,6 +12,9 @@
             app:showAsAction="always" />
         <item
             android:id="@+id/secondScreen"
-            android:title="Second Screen" />
+            android:title="Sensor Screen" />
+        <item
+            android:id="@+id/placesScreen"
+            android:title="Places Screen" />
     </group>
 </menu>

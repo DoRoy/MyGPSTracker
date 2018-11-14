@@ -16,13 +16,11 @@ import android.text.TextUtils;
 import android.util.Log;
 
 public class MyContentProvider extends ContentProvider {
+
     // fields for my content provider
     public static final String PROVIDER_NAME = "mygpstracker.android.mygpstracker.Location";
     public static final String URL = "content://" + PROVIDER_NAME + "/MyContentProvider";
     public static final Uri CONTENT_URI = Uri.parse(URL);
-
-
-
 
     // fields for the database
     public static final String COLUMN_ID = "id";

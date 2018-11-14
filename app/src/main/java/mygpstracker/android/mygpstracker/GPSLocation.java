@@ -20,7 +20,7 @@ import com.google.android.gms.tasks.Task;
  */
 public class GPSLocation implements ILocation {
 
-    AppCompatActivity application;
+    private AppCompatActivity application;
     private FusedLocationProviderClient mFusedLocationClient;
 
 

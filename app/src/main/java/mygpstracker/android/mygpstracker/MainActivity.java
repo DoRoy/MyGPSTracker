@@ -9,12 +9,10 @@ import android.content.IntentFilter;
 import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.content.res.Configuration;
 import android.location.Location;
 import android.location.LocationManager;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -30,6 +28,7 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResponse;
 import com.google.android.gms.location.SettingsClient;
+import com.google.android.gms.location.places.Place;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -37,10 +36,14 @@ import com.google.android.gms.tasks.Task;
 import java.io.File;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import mygpstracker.android.mygpstracker.GPSTesting.GPSTest;
+import mygpstracker.android.mygpstracker.Places.ActivityPlaces;
+import mygpstracker.android.mygpstracker.Places.MyPlaces;
 import mygpstracker.android.mygpstracker.Sensors.ActivityTest;
 import mygpstracker.android.mygpstracker.Sensors.MyNetworkInfo;
 
@@ -60,6 +63,10 @@ public class MainActivity extends AppCompatActivity {
     public static double intervals = 0.25;
     private SamplePolicy samplePolicy;
     public static boolean didChanged = false;
+
+    GPSTest gpsTest;
+
+    MyPlaces myPlace;
 
     private ContentResolver myContentProvider;
 
@@ -97,6 +104,11 @@ public class MainActivity extends AppCompatActivity {
         if (!fineLocation || !coarseLocation || !callLog) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.READ_CALL_LOG}, 2);
         }
+
+        if(gpsTest == null)
+            gpsTest = new GPSTest(this);
+        if(myPlace == null)
+            myPlace = new MyPlaces(this);
 
 
 
@@ -188,6 +200,10 @@ public class MainActivity extends AppCompatActivity {
                 Intent secondScreenIntent = new Intent(this, ActivityTest.class);
                 startActivity(secondScreenIntent);
                 break;
+            case R.id.placesScreen:
+                Intent placesScreenIntent = new Intent(this, ActivityPlaces.class);
+                startActivity(placesScreenIntent);
+                break;
         }
 
         return true;
@@ -216,29 +232,63 @@ public class MainActivity extends AppCompatActivity {
      * Gets the current location and display it on the app main view
      */
     private void getCurrentLocation() {
-        GPSLocation gpsLocation = new GPSLocation(this);
-        if (isGPSUsable()) {
-            Location location = gpsLocation.getLastKnownLocation();
-            if(location != null) {
-                textView_mainActivity.setText("Current Location:\n" +
-                        "\t\tLATITUDE = " + location.getLatitude() +
-                        "\n\t\tLONGITUDE = " + location.getLongitude() + "\n\n");
-            }
-            else{
-                textView_mainActivity.setText("Location is ON\n" +
-                                                "\t\tThe Location that came back is NULL\n\n");
-            }
-        }
-        else{
-            textView_mainActivity.setText("Location is OFF\n\n");
-        }
+        textView_mainActivity.setText("");
+        //getLocationOldWay();
 
         getBatteryData();
-        getNetorkData();
-
+        getNetWorkData();
+        getLocationWithGPSTracker();
+        AppExecutors.getInstance().networkIO().execute(()->getLocationWithPlaces());
     }
 
-    private void getNetorkData() {
+    private void getLocationWithPlaces() {
+        Map<Place,Float> placesList =  myPlace.guessCurrentPlace();
+        if(placesList != null){
+            String content = "\nPlaces:\n";
+            int i = 1;
+            for(Map.Entry<Place,Float> entry : placesList.entrySet()){
+                Place place = entry.getKey();
+                content += "\t\t" + i + ". " + place.getName() + "\n";
+                content += "\t\t\tLikelihood: "  + (int)(entry.getValue() * 100) + "%\n";
+                content += "\t\t\tID: "  + place.getId() + "\n";
+                content += "\t\t\tLatLon: "  + place.getLatLng().latitude + ", " + place.getLatLng().longitude + "\n";
+                content += "\t\t\tAddress: " + place.getAddress() + "\n";
+                content += "\t\t\tAttribution: " + place.getAttributions() + "\n";
+                content += "\t\t\tRating: " + place.getRating() + "\n";
+                content += "\t\t\tPhone: " + place.getPhoneNumber() + "\n";
+                content += "\t\t\tPrice Level: " + place.getPriceLevel() + "\n";
+                content += "\t\t\tWebsite Uri: " + place.getWebsiteUri() + "\n";
+                List<Integer> typeList = place.getPlaceTypes();
+                content += "\t\t\tTypes: ";
+                for(Integer intType:typeList){
+                    content += intType + " ";
+                }
+                content += "\n\n";
+
+                i++;
+            }
+
+            String finalContent = content;
+            runOnUiThread(()->textView_mainActivity.append(finalContent));
+        }
+    }
+
+
+    private void getLocationWithGPSTracker() {
+
+        Location location = gpsTest.getLastKnownLocation();
+ //       gpsTest.getAddress();
+        if(location != null) {
+            runOnUiThread(() -> textView_mainActivity.append("\nLAN:" + location.getLatitude() + ", LON: " + location.getLongitude()));
+            runOnUiThread(()->textView_mainActivity.append("\n" + gpsTest.getAddressString() + "\n"));
+        }
+        else
+            runOnUiThread(()->textView_mainActivity.append("\nLocation came back null\n"));
+
+        //gpsTest.getPeriodicLocation(10000,5000,LocationRequest.PRIORITY_HIGH_ACCURACY);
+    }
+
+    private void getNetWorkData() {
         MyNetworkInfo networkInfo = new MyNetworkInfo(this);
         String networkInfoString = networkInfo.getNetworkDataString();
 
