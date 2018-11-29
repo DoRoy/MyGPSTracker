@@ -70,7 +70,6 @@ public class BackgroundService extends Service {
 
 
     private void action(){
-        System.out.println("ACTION\n");
         int timesToTakeLocation = samplePolicy.getTimesToTakeLocation();
         ExecutorService pool = Executors.newCachedThreadPool();
         Future<Location>[] futureLocations = new FutureTask[timesToTakeLocation];
@@ -98,7 +97,7 @@ public class BackgroundService extends Service {
                 e.printStackTrace();
             }
         }
-        System.out.println("Done Looping\n");
+//        System.out.println("Done Looping\n");
         double[] meanLocation = gpsLocation.getMeanLocation(locations);
         Date currentTime = Calendar.getInstance().getTime();
         String[] dateArr = currentTime.toString().split(" ");

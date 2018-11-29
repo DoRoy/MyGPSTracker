@@ -88,7 +88,7 @@ public class ActivityPlaces extends AppCompatActivity {
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
-        Log.d(TAG, "onCraete");
+        Log.d(TAG, "onCreate");
         setContentView(R.layout.activity_place);
         initialWidgetsAndListeners();
         this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);

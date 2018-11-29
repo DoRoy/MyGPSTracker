@@ -4,6 +4,7 @@ package mygpstracker.android.mygpstracker;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteOpenHelper;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -79,6 +80,8 @@ class MyLog {
     public void writeSettingsUpdate(String date, String latitude, String longitude){
         writeWithResolver("\t** " + date, latitude, longitude + " **");
     }
+
+
 
 }
 

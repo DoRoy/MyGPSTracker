@@ -20,13 +20,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 import mygpstracker.android.mygpstracker.MainActivity;
 import mygpstracker.android.mygpstracker.SamplePolicy;
 
+import static android.content.Context.SENSOR_SERVICE;
+
 /**
  * Created by doroy on 29-Aug-18.
  */
 
 public abstract class ASensorMeasures implements ISensor {
 
-    public static SensorManager sensorManager;
+    public static SensorManager sensorManager ;
 
     protected String sensorName;
 

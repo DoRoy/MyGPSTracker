@@ -16,5 +16,11 @@
         <item
             android:id="@+id/placesScreen"
             android:title="Places Screen" />
+        <item
+            android:id="@+id/providers"
+            android:title="Providers" />
+        <item
+            android:id="@+id/activity_recognition"
+            android:title="Activity Recognition" />
     </group>
 </menu>

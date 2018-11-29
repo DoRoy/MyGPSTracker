@@ -88,6 +88,10 @@ public class MyContentProvider extends ContentProvider {
 
     }
 
+    public SQLiteOpenHelper getSQLitHelper(){
+        return this.dbHelper;
+    }
+
     @Override
     public boolean onCreate() {
         Context context = getContext();
@@ -210,10 +214,10 @@ public class MyContentProvider extends ContentProvider {
         switch (uriMatcher.match(uri)){
             // Get all friend-birthday records
             case LOCATIONS:
-                return "vnd.android.cursor.dir/vnd.example.friends";
+                return "vnd.android.cursor.dir/ mygpstracker.android.mygpstracker";
             // Get a particular friend
             case LOCATIONS_ID:
-                return "vnd.android.cursor.item/vnd.example.friends";
+                return "vnd.android.cursor.item/ mygpstracker.android.mygpstracker";
             default:
                 throw new IllegalArgumentException("Unsupported URI: " + uri);
         }

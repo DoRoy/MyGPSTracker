@@ -1,6 +1,7 @@
 package mygpstracker.android.mygpstracker;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -11,6 +12,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
+import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -22,6 +24,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.ashokvarma.sqlitemanager.SqliteManager;
 import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
@@ -41,6 +44,8 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import mygpstracker.android.mygpstracker.ActivityDetectionPackage.ActivityDetectionActivity;
+import mygpstracker.android.mygpstracker.DB.SqliteHelper;
 import mygpstracker.android.mygpstracker.GPSTesting.GPSTest;
 import mygpstracker.android.mygpstracker.Places.ActivityPlaces;
 import mygpstracker.android.mygpstracker.Places.MyPlaces;
@@ -67,6 +72,9 @@ public class MainActivity extends AppCompatActivity {
     GPSTest gpsTest;
 
     MyPlaces myPlace;
+
+    SqliteHelper sqliteHelper = new SqliteHelper(this);
+
 
     private ContentResolver myContentProvider;
 
@@ -96,6 +104,7 @@ public class MainActivity extends AppCompatActivity {
         file = getApplicationContext().getFileStreamPath("myLogFileText"); // get the file from the apps cache
         MyLog.getInstance().setFile(file); // set file as log file
         MyLog.getInstance().setResolver(myContentProvider);
+
 
         // check permissions and ask for them if there isn't permissions
         boolean fineLocation = ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED;
@@ -179,16 +188,6 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
         switch (id){
             case R.id.reset:
-/*                try {
-                    OutputStreamWriter fileWriter = new OutputStreamWriter(new FileOutputStream(file));
-                    fileWriter.write("");
-                    fileWriter.close();
-                    refresh();
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }*/
                 MyLog.getInstance().resetDataBase();
                 refresh();
                 break;
@@ -203,6 +202,14 @@ public class MainActivity extends AppCompatActivity {
             case R.id.placesScreen:
                 Intent placesScreenIntent = new Intent(this, ActivityPlaces.class);
                 startActivity(placesScreenIntent);
+                break;
+            case R.id.providers:
+                SqliteManager.launchSqliteManager(this, new HelperSqliteDataRetriever(sqliteHelper), BuildConfig.APPLICATION_ID);
+                break;
+
+                case R.id.activity_recognition:
+                Intent activityRecognitionInted = new Intent(this, ActivityDetectionActivity.class);
+                startActivity(activityRecognitionInted);
                 break;
         }
 
@@ -289,7 +296,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void getNetWorkData() {
-        MyNetworkInfo networkInfo = new MyNetworkInfo(this);
+        @SuppressLint({"NewApi", "LocalSuppress"}) MyNetworkInfo networkInfo = new MyNetworkInfo(this);
         String networkInfoString = networkInfo.getNetworkDataString();
 
         runOnUiThread(()->textView_mainActivity.append(networkInfoString));

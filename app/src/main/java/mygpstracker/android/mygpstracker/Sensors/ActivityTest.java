@@ -42,8 +42,9 @@ public class ActivityTest extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_test);
-        ASensorMeasures.sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-
+        SensorManager sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        ASensorMeasures.sensorManager = sensorManager;
+        SensorFactory.setSensorManager(sensorManager);
         initializeWidgetsAndListeners();
 
 
@@ -95,7 +96,7 @@ public class ActivityTest extends AppCompatActivity {
                 Thread t = new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        List<ISensor> list = SensorFactory.getAllAvailableSensors(ASensorMeasures.sensorManager);
+                        List<ISensor> list = SensorFactory.getAllAvailableSensors();
                         Log.d(TAG, "List length: " + list.size());
 
                         runOnUiThread(()->textView.setText("All Sensors Data:\n\n"));

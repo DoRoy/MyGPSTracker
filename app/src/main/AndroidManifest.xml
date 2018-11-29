@@ -9,6 +9,7 @@
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.READ_CALL_LOG"/>
     <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="com.google.android.gms.permission.ACTIVITY_RECOGNITION" />
 
 
     <uses-permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES"/>
@@ -47,6 +48,17 @@
         <provider
             android:authorities="mygpstracker.android.mygpstracker.LocationRecycler"
             android:name=".RecyclerViewTest.RecyclerLocationContentProvider">
+        </provider>
+
+        <provider
+            android:name="android.support.v4.content.FileProvider"
+            android:authorities="${applicationId}"
+            android:exported="false"
+            android:grantUriPermissions="true">
+
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_provider_paths" />
         </provider>
 
         <activity
@@ -96,7 +108,25 @@
                 android:value=".RecyclerViewTest.AddLocationActivity"/>
         </activity>
 
+        <activity
+            android:name=".ActivityDetectionPackage.ActivityDetectionActivity"
+            android:screenOrientation="portrait"
+            android:parentActivityName=".MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".MainActivity"/>
+        </activity>
 
+
+
+        <!-- Service that provides activity recognition data. Setting the android:exported attribute
+        to "false" stops other apps from starting this service, even when using an explicit
+        intent. -->
+        <service
+            android:name=".ActivityDetectionPackage.DetectedActivitiesIntentService"
+            android:exported="false" />
+
+        <service android:name=".ActivityDetectionPackage.BackgroundDetectedActivitiesService"></service>
 
         <service
             android:name=".BackgroundService"

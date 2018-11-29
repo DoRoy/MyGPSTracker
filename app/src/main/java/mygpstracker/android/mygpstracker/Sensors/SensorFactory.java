@@ -1,10 +1,16 @@
 package mygpstracker.android.mygpstracker.Sensors;
 
+import android.annotation.SuppressLint;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
+import android.os.Build;
+import android.support.annotation.RequiresApi;
+import android.util.SparseArray;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by doroy on 02-Sep-18.
@@ -19,33 +25,13 @@ public class SensorFactory {
     private final static int THREE_VALUES = 3;
     private final static int SIX_VALUES = 6;
 
+    private static SensorManager sensorManager;
 
-/*    public static List<ISensor> getAllAvailableSensors(SensorManager sensorManager){
-        List<Sensor> sensorsList = sensorManager.getSensorList(Sensor.TYPE_ALL);
-        List<ISensor> mySensorsList = new LinkedList<>();
-        for (Sensor sensor: sensorsList) {
-            //Log.d(TAG, sensor.getName());
-            switch(getSensorsType(sensor.getType())){
-                case THREE_VALUES:
-                    mySensorsList.add(new Sensor3Axis(sensor));
-                    break;
-                case ONE_VALUES:
-                    mySensorsList.add(new Sensor1Values(sensor));
-                    break;
-                case SIX_VALUES:
-                    mySensorsList.add(new Sensor6Values(sensor));
-                    break;
-                default:
-                    break;
+    public static void setSensorManager(SensorManager newSensorManager){
+        sensorManager = newSensorManager;
+    }
 
-            }
-
-        }
-        return mySensorsList;
-    }*/
-
-
-    public static List<ISensor> getAllAvailableSensors(SensorManager sensorManager){
+    public static List<ISensor> getAllAvailableSensors(){
         List<Sensor> sensorsList = sensorManager.getSensorList(Sensor.TYPE_ALL);
         List<ISensor> mySensorsList = new LinkedList<>();
         for (Sensor sensor: sensorsList) {
@@ -55,6 +41,19 @@ public class SensorFactory {
 
         }
         return mySensorsList;
+    }
+
+
+    @SuppressLint("NewApi")
+    public static SparseArray<String > getAllAvailableSensorsNameAndID(){
+        List<Sensor> sensorsList = sensorManager.getSensorList(Sensor.TYPE_ALL);
+        SparseArray<String> sparseArray = new SparseArray<>(sensorsList.size());
+        for (Sensor sensor: sensorsList) {
+            if(sensor.getReportingMode() == Sensor.REPORTING_MODE_CONTINUOUS) {
+                sparseArray.append(sensor.getId(),sensor.getName());
+            }
+        }
+        return sparseArray;
     }
 
     private static int getSensorsType(int type) {
@@ -75,22 +74,7 @@ public class SensorFactory {
                 type == Sensor.TYPE_MAGNETIC_FIELD_UNCALIBRATED){
             return SIX_VALUES;
         }
-/*
-Sensor.TYPE_ROTATION_VECTOR  - 5 values
-Sensor.TYPE_GEOMAGNETIC_ROTATION_VECTOR - 5 values
-Game Rotation Vector - 5 values
 
-AMD
-RMD
-Basic Gestures
-Facing
-Pedometer
-Motion Accel
-Coarse Motion Classifier
-Pocket Detect
-
-
-        */
         return 0;
 
     }

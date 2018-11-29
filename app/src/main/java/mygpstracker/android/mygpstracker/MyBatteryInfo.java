@@ -155,7 +155,7 @@ public class MyBatteryInfo {
         map.put("Level", "" + getBatteryLevel());
         map.put("Scale", "" + getBatteryScale());
         map.put("Percent", "" + getPercentage() + "%");
-        map.put("Temprature", "" + ((float) getTemprature()) / 10f + " °C");
+        map.put("Temperature", "" + ((float) getTemprature()) / 10f + " °C");
         map.put("Voltage", "" + getVoltage() + " Mv");
         map.put("Health", getHealth());
         map.put("Capacity", "" + getCapacity() + " mAh");
