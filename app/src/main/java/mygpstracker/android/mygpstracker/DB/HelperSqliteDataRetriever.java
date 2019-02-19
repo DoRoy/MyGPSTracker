@@ -1,4 +1,4 @@
-package mygpstracker.android.mygpstracker;
+package mygpstracker.android.mygpstracker.DB;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -13,7 +13,7 @@ public class HelperSqliteDataRetriever implements SqliteDataRetriever {
     SQLiteOpenHelper mSqliteHelper;
     SQLiteDatabase mSQLiteDatabase;
 
-    HelperSqliteDataRetriever(SQLiteOpenHelper sqliteHelper) {
+    public HelperSqliteDataRetriever(SQLiteOpenHelper sqliteHelper) {
         mSqliteHelper = sqliteHelper;
         mSQLiteDatabase = mSqliteHelper.getWritableDatabase();
     }
@@ -26,6 +26,13 @@ public class HelperSqliteDataRetriever implements SqliteDataRetriever {
         return mSQLiteDatabase.rawQuery(query, selectionArgs);
     }
 
+    public void deleteTableData(@NonNull String tableName){
+        if (mSQLiteDatabase == null || !mSQLiteDatabase.isOpen()) {
+            mSQLiteDatabase = mSqliteHelper.getWritableDatabase();
+        }
+        mSQLiteDatabase.execSQL("DROP TABLE IF EXISTS " + tableName);
+    }
+
     @Override
     public String getDatabaseName() {
         return mSqliteHelper.getDatabaseName();
@@ -35,4 +42,6 @@ public class HelperSqliteDataRetriever implements SqliteDataRetriever {
     public void freeResources() {
         // not good practice to open multiple database connections and close every time
     }
+
+
 }

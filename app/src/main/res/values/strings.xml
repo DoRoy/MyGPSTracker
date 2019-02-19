@@ -11,6 +11,7 @@
     <string name="currentLocation_btn">Get Current Location</string>
     <string name="textView_mainActivity">Welcome</string>
 
+    <!--Activity Recognition-->
     <string name="activity_in_vehicle">In Vehicle</string>
     <string name="activity_on_bicycle">On Bicycle</string>
     <string name="activity_on_foot">On Foot</string>
@@ -19,5 +20,41 @@
     <string name="activity_tilting">Tilting</string>
     <string name="activity_unknown">Unknown</string>
     <string name="activity_walking">Walking</string>
+
+    <!--Review-->
+    <string-array name="company_arrays">
+        <item>Choose your Companion</item>
+        <item>GF/BF</item>
+        <item>Friends</item>
+        <item>Alone</item>
+        <item>Work companions</item>
+    </string-array>
+    <string name="company_prompt">Choose your Companion</string>
+
+    <string-array name="freq_arrays">
+        <item>Choose a Frequency</item>
+        <item>First Time</item>
+        <item>Seldom</item>
+        <item>Often</item>
+    </string-array>
+    <string name="freq_prompt">Choose a Frequency</string>
+
+    <string-array name="purpose_arrays">
+        <item>Choose a Purpose</item>
+        <item>Casual</item>
+        <item>Romantic</item>
+        <item>Deal</item>
+        <item>Special Occasion</item>
+    </string-array>
+    <string name="purpose_prompt">Choose a Purpose</string>
+
+    <string name="rate">Rate</string>
+    <string name="write_review">Write a Review</string>
+    <string name="inplace_checkbox">In Place?</string>
+    <string name="choose_place">Please Choose a Place</string>
+    <string name="current_location_rb">Choose from Current Location</string>
+    <string name="search_place_rb">Search a Place</string>
+
+
 
 </resources>

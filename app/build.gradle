@@ -2,11 +2,11 @@ apply plugin: 'com.android.application'
 
 
 android {
-    compileSdkVersion 26
+    compileSdkVersion 28
     defaultConfig {
         applicationId "mygpstracker.android.mygpstracker"
         minSdkVersion 21
-        targetSdkVersion 26
+        targetSdkVersion 28
         versionCode 8
         versionName "1.1"
         multiDexEnabled true
@@ -37,19 +37,29 @@ android {
 
 repositories {
     mavenCentral()
+
+
 }
 
 
 
 
 dependencies {
+    def nav_version = "1.0.0-alpha01"
+
+    implementation "android.arch.navigation:navigation-fragment:$nav_version" // use -ktx for Kotlin
+    implementation "android.arch.navigation:navigation-ui:$nav_version" // use -ktx for Kotlin
+
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation 'com.android.support:appcompat-v7:26.1.0'
+    implementation 'com.android.support:appcompat-v7:28.0.0'
+    implementation 'com.android.support:design:28.0.0'
     implementation 'com.android.support.constraint:constraint-layout:1.1.3'
     testImplementation 'junit:junit:4.12'
     //androidTestImplementation 'com.android.support.test:runner:1.0.2'
     //androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
-    implementation 'com.android.support:recyclerview-v7:26.1.0'
+    implementation 'com.android.support:recyclerview-v7:28.0.0'
+
+
 
     //noinspection GradleCompatible
    compile 'com.google.android.gms:play-services-location:16.0.0'
@@ -61,8 +71,8 @@ dependencies {
     compile 'com.google.android.gms:play-services-places:16.0.0'
     implementation 'com.google.android.gms:play-services-places:16.0.0'
 
-    compile 'com.android.support:design:26.1.0'
-    compile 'com.android.support:cardview-v7:26.1.0'
+    compile 'com.android.support:design:28.0.0'
+    compile 'com.android.support:cardview-v7:28.0.0'
     compile 'com.iarcuschin:simpleratingbar:0.1.3'
 
     compile ('se.walkercrou:google-places-api-java:2.1.7'){
@@ -72,5 +82,6 @@ dependencies {
 
     debugCompile 'com.ashokvarma.android:sqlite-manager:1.3.0'
     releaseCompile 'com.ashokvarma.android:sqlite-manager-no-op:1.3.0'
+    implementation 'org.jetbrains:annotations:15.0'
 
 }

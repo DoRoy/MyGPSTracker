@@ -48,7 +48,7 @@ public class MyPlaces extends Activity implements GoogleApiClient.ConnectionCall
     public GoogleApiClient mGoogleApiClient;
     public GeoDataClient mGeoDataClient;
     Context context;
-    public Map<Place,Float> places;
+    public ArrayMap<Place,Float> places;
     private PlaceArrayAdapter mPlaceArrayAdapter;
 
     //https://www.programcreek.com/java-api-examples/index.php?project_name=windy1/google-places-api-java#
@@ -100,7 +100,7 @@ public class MyPlaces extends Activity implements GoogleApiClient.ConnectionCall
 
 
 
-    public Map<Place,Float> guessCurrentPlace() {
+    public ArrayMap<Place,Float> guessCurrentPlace() {
         Log.d(TAG, "guessCurrentPlace");
         @SuppressLint("MissingPermission") PendingResult<PlaceLikelihoodBuffer> result = Places.PlaceDetectionApi.getCurrentPlace( mGoogleApiClient, null );
         result.setResultCallback( new ResultCallback<PlaceLikelihoodBuffer>() {

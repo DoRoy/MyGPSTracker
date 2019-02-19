@@ -45,7 +45,7 @@ public class SensorFactory {
 
 
     @SuppressLint("NewApi")
-    public static SparseArray<String > getAllAvailableSensorsNameAndID(){
+    public static SparseArray<String> getAllAvailableSensorsNameAndID(){
         List<Sensor> sensorsList = sensorManager.getSensorList(Sensor.TYPE_ALL);
         SparseArray<String> sparseArray = new SparseArray<>(sensorsList.size());
         for (Sensor sensor: sensorsList) {
@@ -76,7 +76,6 @@ public class SensorFactory {
         }
 
         return 0;
-
     }
 }
 

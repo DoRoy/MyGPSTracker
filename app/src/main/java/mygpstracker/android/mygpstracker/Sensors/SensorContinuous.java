@@ -54,14 +54,14 @@ public class SensorContinuous extends ASensorMeasures  {
         Map<String, Double> map = new Hashtable<>(5);
         for(int i = 0; i < value.length; i ++) {
             values = value[i];
-            map.put(sensorName + MAX_VALUE + "_[" + i + "]", getMax(values));
-            map.put(sensorName + MIN_VALUE + "_[" + i + "]", getMin(values));
-            map.put(sensorName + MEAN_VALUE + "_[" + i + "]", getMean(values));
-            map.put(sensorName + MEDIAN_VALUE + "_[" + i + "]", getMedian(values));
-            map.put(sensorName + DEVIATION_VALUE + "_[" + i + "]", getDeviation(values));
-            map.put(sensorName + POWER_VALUE , getPower());
-            map.put(sensorName + MAX_RANGE_VALUE, getMaximumRange());
-            map.put(sensorName + "range", getRange(values));
+            map.put(MAX_VALUE + "_[" + i + "]", getMax(values));
+            map.put(MIN_VALUE + "_[" + i + "]", getMin(values));
+            map.put(MEAN_VALUE + "_[" + i + "]", getMean(values));
+            map.put(MEDIAN_VALUE + "_[" + i + "]", getMedian(values));
+            map.put(DEVIATION_VALUE + "_[" + i + "]", getDeviation(values));
+            map.put(POWER_VALUE , getPower());
+            map.put(MAX_RANGE_VALUE, getMaximumRange());
+            map.put("range", getRange(values));
         }
         return map;
     }

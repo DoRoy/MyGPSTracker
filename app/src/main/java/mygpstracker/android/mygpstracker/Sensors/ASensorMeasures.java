@@ -56,7 +56,7 @@ public abstract class ASensorMeasures implements ISensor {
 
     public ASensorMeasures(Sensor sensor){
         this.sensor = sensor;
-        this.sensorName = sensor.getName() + "_";
+        this.sensorName = sensor.getName();
         sensorEventListener = new SensorEventListener() {
             @Override
             public void onSensorChanged(SensorEvent event) {
@@ -72,9 +72,9 @@ public abstract class ASensorMeasures implements ISensor {
                 if(counter <= 0) {
                     if (lock){
                         try {
-                            Log.d(TAG, "OnSensorChanged - Listener - Acquiring semaphore - " + semaphore.availablePermits());
+                            //Log.d(TAG, "OnSensorChanged - Listener - Acquiring semaphore - " + semaphore.availablePermits());
                             semaphore.acquire();
-                            Log.d(TAG, "OnSensorChanged - Listener - semaphore acquired - " + semaphore.availablePermits());
+                            //Log.d(TAG, "OnSensorChanged - Listener - semaphore acquired - " + semaphore.availablePermits());
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
@@ -96,13 +96,13 @@ public abstract class ASensorMeasures implements ISensor {
                     lock = true;
                     semaphore2.release();
 
-                    Log.d(TAG, "OnSensorChanged - Listener - semaphore2 released - " + semaphore.availablePermits());
+                    //Log.d(TAG, "OnSensorChanged - Listener - semaphore2 released - " + semaphore.availablePermits());
                 }
             }
 
             @Override
             public void onAccuracyChanged(Sensor sensor, int accuracy) {
-                Log.d(TAG, "onAccuracyChanged - Listener");
+                //Log.d(TAG, "onAccuracyChanged - Listener");
             }
         };
     }
@@ -125,20 +125,20 @@ public abstract class ASensorMeasures implements ISensor {
     @Override
     public Map<String, Double> getData() {
         final Map<String, Double>[] map = new Map[]{new Hashtable<>(4 /*Parameters*/ * 3 /*Axis*/)};
-        Log.d(TAG, "getData - Entered getData()");
+        //Log.d(TAG, "getData - Entered getData()");
         Thread t = new Thread(() -> {
             map[0] = threadRun();
         });
         t.setDaemon(true);
         t.start();
-        Log.d(TAG, "getData - started t thread");
+        //Log.d(TAG, "getData - started t thread");
         try {
             t.join();
-            Log.d(TAG, "getData - After t.join()");
+            //Log.d(TAG, "getData - After t.join()");
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        Log.d(TAG, "getData - returned DATA");
+        //Log.d(TAG, "getData - returned DATA");
         return map[0];
     }
 
@@ -148,19 +148,19 @@ public abstract class ASensorMeasures implements ISensor {
         tt.start();
         try {
             tt.join();
-            Log.d(TAG, "threadRun - inside t - after tt.join()");
+            //Log.d(TAG, "threadRun - inside t - after tt.join()");
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
         Map<String, Double> map = new Hashtable<>(4 /*Parameters*/ * 3 /*Axis*/);
 
-        Log.d(TAG, "threadRun - inside t -  registered listener");
+        //Log.d(TAG, "threadRun - inside t -  registered listener");
 
         try {
-            Log.d(TAG, "threadRun - inside t -  before acquiring semaphore2 - " + semaphore.availablePermits());
+            //Log.d(TAG, "threadRun - inside t -  before acquiring semaphore2 - " + semaphore.availablePermits());
             semaphore2.acquire();
-            Log.d(TAG, "threadRun - inside t -  Acquired semaphore2 - " + semaphore.availablePermits());
+            //Log.d(TAG, "threadRun - inside t -  Acquired semaphore2 - " + semaphore.availablePermits());
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -168,7 +168,7 @@ public abstract class ASensorMeasures implements ISensor {
         map.putAll(getStatisticsOfData());
 
         semaphore.release();
-        Log.d(TAG, "threadRun - inside t - released semaphore - " + semaphore.availablePermits());
+        //Log.d(TAG, "threadRun - inside t - released semaphore - " + semaphore.availablePermits());
         return map;
     }
 
@@ -239,7 +239,7 @@ public abstract class ASensorMeasures implements ISensor {
         Map<String, Double> map =  new Hashtable<>(15);
         for(int i = 0; i < data.length - 1; i ++){
             for(int j = i + 1; j <data.length; j ++){
-                map.put(sensorName + "Correlation_" + i + "_" + j, getCorrelationBetweenTwoAxis(data[i], data[j]));
+                map.put("Correlation_" + i + "_" + j, getCorrelationBetweenTwoAxis(data[i], data[j]));
             }
         }
 

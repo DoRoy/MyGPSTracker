@@ -1,5 +1,6 @@
-package mygpstracker.android.mygpstracker;
+package mygpstracker.android.mygpstracker.Battery;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -21,7 +22,7 @@ public class MyBatteryInfo {
     private BatteryManager mBatteryManager;
 
 
-    public MyBatteryInfo(Context context) {
+    public MyBatteryInfo(Context context)   {
         this.context = context;
         iFilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
         mBatteryManager = (BatteryManager) context.getSystemService(Context.BATTERY_SERVICE);
@@ -73,7 +74,7 @@ public class MyBatteryInfo {
         return level / scale ;
     }
 
-    private int getTemprature(){
+    private int getTemperature(){
         return batteryStatus.getIntExtra(BatteryManager.EXTRA_TEMPERATURE,-1);
     }
 
@@ -151,15 +152,15 @@ public class MyBatteryInfo {
                 typeString = "WIRELESS";
                 break;
         }
-        map.put("Charging Type", typeString);
-        map.put("Level", "" + getBatteryLevel());
-        map.put("Scale", "" + getBatteryScale());
-        map.put("Percent", "" + getPercentage() + "%");
-        map.put("Temperature", "" + ((float) getTemprature()) / 10f + " °C");
-        map.put("Voltage", "" + getVoltage() + " Mv");
-        map.put("Health", getHealth());
-        map.put("Capacity", "" + getCapacity() + " mAh");
-        map.put("Technology", getTechnology());
+        map.put(BatteryInfoWrapper.KEY_CHARGING_TYPE, typeString);
+        map.put(BatteryInfoWrapper.KEY_LEVEL, "" + getBatteryLevel());
+        map.put(BatteryInfoWrapper.KEY_SCALE, "" + getBatteryScale());
+        map.put(BatteryInfoWrapper.KEY_PERCENT, "" + getPercentage() + "%");
+        map.put(BatteryInfoWrapper.KEY_TEMPERATURE, "" + ((float) getTemperature()) / 10f + " °C");
+        map.put(BatteryInfoWrapper.KEY_VOLTAGE, "" + getVoltage() + " Mv");
+        map.put(BatteryInfoWrapper.KEY_HEALTH, getHealth());
+        map.put(BatteryInfoWrapper.KEY_CAPACITY, "" + getCapacity() + " mAh");
+        map.put(BatteryInfoWrapper.KEY_TECHNOLOGY, getTechnology());
 
         return map;
     }
@@ -172,6 +173,7 @@ public class MyBatteryInfo {
         }
         return data;
     }
+
 
 
 }

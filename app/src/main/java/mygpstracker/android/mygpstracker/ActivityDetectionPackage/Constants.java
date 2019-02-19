@@ -7,5 +7,5 @@ public class Constants {
 
     static final long DETECTION_INTERVAL_IN_MILLISECONDS = 30 * 1000;
 
-    public static final int CONFIDENCE = 40;
+    public static final int CONFIDENCE = 60;
 }

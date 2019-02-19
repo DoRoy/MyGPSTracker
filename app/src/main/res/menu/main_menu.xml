@@ -22,5 +22,11 @@
         <item
             android:id="@+id/activity_recognition"
             android:title="Activity Recognition" />
+        <item
+            android:id="@+id/rate_activity"
+            android:title="Rate" />
+        <item
+            android:id="@+id/send_csv"
+            android:title="Send CSV" />
     </group>
 </menu>

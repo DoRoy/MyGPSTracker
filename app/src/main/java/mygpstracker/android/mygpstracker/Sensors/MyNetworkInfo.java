@@ -59,6 +59,7 @@ public class MyNetworkInfo {
         if(wifiManager != null){
             String ans = "";
             WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+
             if(wifiInfo != null && isWifiConn) {
                 ans += "\t\tIP: " + Formatter.formatIpAddress(wifiInfo.getIpAddress()) + "\n";
                 ans += "\t\tMAC: " + wifiInfo.getMacAddress() + "\n";

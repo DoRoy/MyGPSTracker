@@ -2,6 +2,7 @@ package mygpstracker.android.mygpstracker;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.ActivityManager;
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -10,8 +11,10 @@ import android.content.IntentFilter;
 import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationManager;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -37,6 +40,9 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 
 import java.io.File;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -44,13 +50,22 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import ClientPackage.Client;
+import ClientPackage.SendCSVClientStrategy;
 import mygpstracker.android.mygpstracker.ActivityDetectionPackage.ActivityDetectionActivity;
+import mygpstracker.android.mygpstracker.BackgroundServicePackage.BackgroundServiceFactory;
+import mygpstracker.android.mygpstracker.BackgroundServicePackage.CollectData.BatteryInfoBackgroundService;
+import mygpstracker.android.mygpstracker.Battery.MyBatteryInfo;
+import mygpstracker.android.mygpstracker.DB.HelperSqliteDataRetriever;
 import mygpstracker.android.mygpstracker.DB.SqliteHelper;
 import mygpstracker.android.mygpstracker.GPSTesting.GPSTest;
 import mygpstracker.android.mygpstracker.Places.ActivityPlaces;
 import mygpstracker.android.mygpstracker.Places.MyPlaces;
+import mygpstracker.android.mygpstracker.Review.ReviewActivity;
+import mygpstracker.android.mygpstracker.Sensors.ASensorMeasures;
 import mygpstracker.android.mygpstracker.Sensors.ActivityTest;
 import mygpstracker.android.mygpstracker.Sensors.MyNetworkInfo;
+import mygpstracker.android.mygpstracker.Sensors.SensorFactory;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -74,6 +89,8 @@ public class MainActivity extends AppCompatActivity {
     MyPlaces myPlace;
 
     SqliteHelper sqliteHelper = new SqliteHelper(this);
+
+    private Intent mBatteryIntent;
 
 
     private ContentResolver myContentProvider;
@@ -119,8 +136,25 @@ public class MainActivity extends AppCompatActivity {
         if(myPlace == null)
             myPlace = new MyPlaces(this);
 
+        SensorManager sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        ASensorMeasures.sensorManager = sensorManager;
+        SensorFactory.setSensorManager(sensorManager);
 
-
+/*        if (!isMyServiceRunning(BatteryInfoBackgroundService.class)){
+            mBatteryIntent = new Intent(this, BatteryInfoBackgroundService.class);
+            startService(mBatteryIntent);
+        }*/
+/*        if (!isMyServiceRunning(BatteryInfoBackgroundService.class)){
+            mBatteryIntent = new Intent(this, BatteryInfoBackgroundService.class);
+            startService(mBatteryIntent);
+        }*/
+        ArrayList<Class> classesList = BackgroundServiceFactory.getAllServicesClass();
+        for (Class aClass: classesList ) {
+            if (!isMyServiceRunning(aClass)){
+                Intent intent = new Intent(this, aClass);
+                startService(intent);
+            }
+        }
 
         // start the background service
         setLocationSettingsListener();
@@ -130,9 +164,22 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        System.out.println("OnStart");
+        Log.d(TAG, "onStart");
         samplePolicy.setTimesToTakeLocation(timesToTakeLocation);
         samplePolicy.setIntervalsInMinutes(intervals);
+
+    }
+
+    private boolean isMyServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                Log.i ("isMyServiceRunning?", true+"");
+                return true;
+            }
+        }
+        Log.i ("isMyServiceRunning?", false+"");
+        return false;
     }
 
 
@@ -145,11 +192,14 @@ public class MainActivity extends AppCompatActivity {
         editor.putFloat(INTERVALS, (float)intervals);
         editor.putInt(TIMESTOTAKELOCATION, timesToTakeLocation);
         editor.apply();
+
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        Log.d(TAG, "onResume");
+
         if(didChanged){
             Date currentTime = Calendar.getInstance().getTime();
             String[] dateArr = currentTime.toString().split(" ");
@@ -173,11 +223,16 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
+
+        Log.d(TAG, "onDestroy");
         if (yourReceiver != null) {
             unregisterReceiver(yourReceiver);
             yourReceiver = null;
         }
+        stopService(new Intent(this,BackgroundService.class));
+
+        stopService(mBatteryIntent);
+        super.onDestroy();
 
     }
 
@@ -188,6 +243,7 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
         switch (id){
             case R.id.reset:
+                sqliteHelper.resetTables();
                 MyLog.getInstance().resetDataBase();
                 refresh();
                 break;
@@ -206,14 +262,36 @@ public class MainActivity extends AppCompatActivity {
             case R.id.providers:
                 SqliteManager.launchSqliteManager(this, new HelperSqliteDataRetriever(sqliteHelper), BuildConfig.APPLICATION_ID);
                 break;
-
-                case R.id.activity_recognition:
-                Intent activityRecognitionInted = new Intent(this, ActivityDetectionActivity.class);
-                startActivity(activityRecognitionInted);
+            case R.id.rate_activity:
+                Intent ReviewActivityIntend = new Intent(this, ReviewActivity.class);
+                startActivity(ReviewActivityIntend);
+                break;
+            case R.id.activity_recognition:
+                Intent activityRecognitionIntend = new Intent(this, ActivityDetectionActivity.class);
+                startActivity(activityRecognitionIntend);
+                break;
+            case R.id.send_csv:
+                sendCSV();
                 break;
         }
 
         return true;
+    }
+
+    private void sendCSV() {
+        try {
+            Client client = new Client(InetAddress.getByName("10.100.102.6"),5400, new SendCSVClientStrategy(this, SqliteHelper.TABLE_BATTERY, "X"));
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+
+                client.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+
+            } else {
+
+                client.execute();
+            }
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
     }
 
     private void initializeSharedPreferences(){

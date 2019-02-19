@@ -35,6 +35,7 @@
         <activity android:name=".MainActivity"
             android:launchMode="singleTop">
             <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
@@ -73,7 +74,7 @@
 
 
         <activity
-            android:name=".Sensors.ActivityTest"
+            android:name=".Sensors$ActivityTest"
             android:label="@string/activity_sensors"
             android:parentActivityName=".MainActivity">
             <meta-data
@@ -82,7 +83,7 @@
         </activity>
 
         <activity
-            android:name=".Places.ActivityPlaces"
+            android:name=".Places$ActivityPlaces"
             android:label="@string/activity_places"
             android:screenOrientation="portrait"
             android:parentActivityName=".MainActivity">
@@ -91,25 +92,32 @@
                 android:value=".MainActivity"/>
         </activity>
 
-        <activity
+<!--        <activity
             android:name=".RecyclerViewTest.RecyclerActivity">
             <intent-filter>
                  <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
+        </activity>-->
 
-        <activity
+<!--        <activity
             android:name=".RecyclerViewTest.AddLocationActivity"
             android:parentActivityName=".RecyclerViewTest.RecyclerActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".RecyclerViewTest.AddLocationActivity"/>
-        </activity>
+        </activity>-->
 
         <activity
-            android:name=".ActivityDetectionPackage.ActivityDetectionActivity"
+            android:name=".ActivityDetectionPackage$ActivityDetectionActivity"
+            android:screenOrientation="portrait"
+            android:parentActivityName=".MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".MainActivity"/>
+        </activity>
+        <activity
+            android:name=".Review$ReviewActivity"
             android:screenOrientation="portrait"
             android:parentActivityName=".MainActivity">
             <meta-data
@@ -128,10 +136,27 @@
 
         <service android:name=".ActivityDetectionPackage.BackgroundDetectedActivitiesService"></service>
 
-        <service
+<!--        <service
             android:name=".BackgroundService"
             android:enabled="true"
-            android:exported="false"></service>
+            android:exported="false">
+        </service>-->
+
+<!--        <service
+            android:name=".Battery.BatteryInfoBackgroundService"
+            android:enabled="true"
+            android:exported="false">
+        </service>-->
+
+        <service
+            android:name=".BackgroundServicePackage.CollectData.BatteryInfoBackgroundService"
+            android:enabled="true"
+            android:exported="false">
+        </service>
+        <service android:name=".BackgroundServicePackage.CollectData.PlaceBackgroundService" />
+        <service android:name=".BackgroundServicePackage.SendData.SendTablesBackgroundService" />
+        <service android:name=".BackgroundServicePackage.CollectData.SensorBackgroundService" />
+
 
         <receiver
             android:name=".AutoStart"
@@ -142,6 +167,13 @@
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
 
             </intent-filter>
+        </receiver>
+
+        <receiver
+            android:name=".Battery.BatteryBroadcastReceiver"
+            android:enabled="true"
+            android:exported="true"
+            android:label="RestartServiceWhenStopped">
         </receiver>
 
 
