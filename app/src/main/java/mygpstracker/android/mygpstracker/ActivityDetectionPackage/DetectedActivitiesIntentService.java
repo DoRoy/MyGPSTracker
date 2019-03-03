@@ -21,12 +21,14 @@ public class DetectedActivitiesIntentService  extends IntentService {
 
     @Override
     public void onCreate() {
+        Log.d(TAG,"onCreate");
         super.onCreate();
     }
 
     @SuppressWarnings("unchecked")
     @Override
     protected void onHandleIntent(Intent intent) {
+        Log.d(TAG,"onHandleIntent");
         ActivityRecognitionResult result = ActivityRecognitionResult.extractResult(intent);
 
         // Get the list of the probable activities associated with the current state of the
@@ -35,12 +37,13 @@ public class DetectedActivitiesIntentService  extends IntentService {
         ArrayList<DetectedActivity> detectedActivities = (ArrayList) result.getProbableActivities();
 
         for (DetectedActivity activity : detectedActivities) {
-            Log.e(TAG, "Detected activity: " + activity.getType() + ", " + activity.getConfidence());
+            Log.d(TAG, "Detected activity: " + activity.getType() + ", " + activity.getConfidence());
             broadcastActivity(activity);
         }
     }
 
     private void broadcastActivity(DetectedActivity activity) {
+        Log.d(TAG,"broadcastActivity");
         Intent intent = new Intent(Constants.BROADCAST_DETECTED_ACTIVITY);
         intent.putExtra("type", activity.getType());
         intent.putExtra("confidence", activity.getConfidence());

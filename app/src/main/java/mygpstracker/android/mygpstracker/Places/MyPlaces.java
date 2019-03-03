@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 
 import mygpstracker.android.mygpstracker.AppExecutors;
+import mygpstracker.android.mygpstracker.BackgroundServicePackage.LocationSettingsBroadcastReceiver;
 
 
 /**
@@ -95,29 +96,38 @@ public class MyPlaces extends Activity implements GoogleApiClient.ConnectionCall
         mGoogleApiClient.connect();
 
         mGeoDataClient = Places.getGeoDataClient(context);
-
     }
+
+
 
 
 
     public ArrayMap<Place,Float> guessCurrentPlace() {
         Log.d(TAG, "guessCurrentPlace");
-        @SuppressLint("MissingPermission") PendingResult<PlaceLikelihoodBuffer> result = Places.PlaceDetectionApi.getCurrentPlace( mGoogleApiClient, null );
-        result.setResultCallback( new ResultCallback<PlaceLikelihoodBuffer>() {
-            @Override
-            public void onResult( PlaceLikelihoodBuffer likelyPlaces ) {
-                AppExecutors.getInstance().networkIO().execute(()-> {
-                    setPlacesList(likelyPlaces);
-                });
+        if (mGoogleApiClient.isConnected()) {
+            Log.d(TAG, "guessCurrentPlace - Connected");
+            @SuppressLint("MissingPermission") PendingResult<PlaceLikelihoodBuffer> result = Places.PlaceDetectionApi.getCurrentPlace(mGoogleApiClient, null);
+            result.setResultCallback(new ResultCallback<PlaceLikelihoodBuffer>() {
+                @Override
+                public void onResult(PlaceLikelihoodBuffer likelyPlaces) {
+                    AppExecutors.getInstance().networkIO().execute(() -> {
+                        setPlacesList(likelyPlaces);
+                    });
 
+                }
+            });
+            try {
+                synchronized (places) {
+                    places.wait();
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
-        });
-        try {
-            synchronized (places) {
-                places.wait();
-            }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+
+        }
+        else{
+            Log.d(TAG, "guessCurrentPlace - Not Connected");
+            buildGoogleApiClient();
         }
         return places;
     }

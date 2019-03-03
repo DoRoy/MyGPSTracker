@@ -213,7 +213,7 @@ public class LocationHelper implements PermissionUtils.PermissionResultCallback 
     /**
      * Method used to get the GoogleApiClient
      */
-    public GoogleApiClient getGoogleApiCLient()
+    public GoogleApiClient getGoogleApiClient()
     {
         return mGoogleApiClient;
     }

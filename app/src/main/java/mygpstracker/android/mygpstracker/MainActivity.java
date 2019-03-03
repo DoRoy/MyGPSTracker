@@ -55,6 +55,7 @@ import ClientPackage.SendCSVClientStrategy;
 import mygpstracker.android.mygpstracker.ActivityDetectionPackage.ActivityDetectionActivity;
 import mygpstracker.android.mygpstracker.BackgroundServicePackage.BackgroundServiceFactory;
 import mygpstracker.android.mygpstracker.BackgroundServicePackage.CollectData.BatteryInfoBackgroundService;
+import mygpstracker.android.mygpstracker.BackgroundServicePackage.LocationSettingsBroadcastReceiver;
 import mygpstracker.android.mygpstracker.Battery.MyBatteryInfo;
 import mygpstracker.android.mygpstracker.DB.HelperSqliteDataRetriever;
 import mygpstracker.android.mygpstracker.DB.SqliteHelper;
@@ -114,10 +115,10 @@ public class MainActivity extends AppCompatActivity {
 
         initializeListeners();
         initializeSharedPreferences();
-
+        registerReceiverGPS();
         samplePolicy = new SamplePolicy(timesToTakeLocation, intervals);
-        BackgroundService.samplePolicy = samplePolicy;
-        BackgroundService.gpsLocation = new GPSLocation(this); // initialize the strategy we want to take locations with
+        //BackgroundService.samplePolicy = samplePolicy;
+        //BackgroundService.gpsLocation = new GPSLocation(this); // initialize the strategy we want to take locations with
         file = getApplicationContext().getFileStreamPath("myLogFileText"); // get the file from the apps cache
         MyLog.getInstance().setFile(file); // set file as log file
         MyLog.getInstance().setResolver(myContentProvider);
@@ -131,8 +132,8 @@ public class MainActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.READ_CALL_LOG}, 2);
         }
 
-        if(gpsTest == null)
-            gpsTest = new GPSTest(this);
+        //if(gpsTest == null)
+            //gpsTest = new GPSTest(this);
         if(myPlace == null)
             myPlace = new MyPlaces(this);
 
@@ -158,6 +159,7 @@ public class MainActivity extends AppCompatActivity {
 
         // start the background service
         setLocationSettingsListener();
+
 
     }
 
@@ -215,10 +217,20 @@ public class MainActivity extends AppCompatActivity {
         }
         else if(flag == 0){
             flag = 1;
-           registerReceiverGPS();
+           //registerReceiverGPS();
         }
         refresh();
 
+    }
+
+    private void stopServices(){
+        ArrayList<Class> classesList = BackgroundServiceFactory.getAllServicesClass();
+        for (Class aClass: classesList ) {
+            if (isMyServiceRunning(aClass)){
+                Intent intent = new Intent(this, aClass);
+                stopService(intent);
+            }
+        }
     }
 
     @Override
@@ -229,9 +241,8 @@ public class MainActivity extends AppCompatActivity {
             unregisterReceiver(yourReceiver);
             yourReceiver = null;
         }
-        stopService(new Intent(this,BackgroundService.class));
+        //stopServices();
 
-        stopService(mBatteryIntent);
         super.onDestroy();
 
     }
@@ -431,7 +442,8 @@ public class MainActivity extends AppCompatActivity {
 
         LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder().addLocationRequest(mLocationRequest);
 
-        SettingsClient client = LocationServices.getSettingsClient(this);
+        SettingsClient client = LocationServices.getSettingsClient(getApplicationContext());
+
         Task<LocationSettingsResponse> task = client.checkLocationSettings(builder.build());
         task.addOnSuccessListener(this, new OnSuccessListener<LocationSettingsResponse>() {
             @Override
@@ -441,7 +453,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.d(TAG, "OnSuccess LocationSettingsResponse");
                 if(locationSettingsResponse.getLocationSettingsStates().isLocationPresent()){
                     Log.d(TAG,"OnSuccess GPS is Usable");
-                    checkGPS();
+                    //checkGPS();
                 }
                 else{
                     Log.d(TAG,"OnSuccess GPS is not Usable");
@@ -515,7 +527,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    private static final String ACTION_GPS = "android.location.PROVIDERS_CHANGED";
+//    private static final String ACTION_GPS = "android.location.PROVIDERS_CHANGED";
+    private static final String ACTION_GPS = LocationManager.GPS_PROVIDER;
     private BroadcastReceiver yourReceiver;
     private static volatile boolean isGPSAlreadyOn = false;
 
@@ -541,7 +554,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void registerReceiverGPS() {
+/*    private void registerReceiverGPS() {
         if (yourReceiver == null) {
             // INTENT FILTER FOR GPS MONITORING
             final IntentFilter theFilter = new IntentFilter();
@@ -563,8 +576,28 @@ public class MainActivity extends AppCompatActivity {
             };
             registerReceiver(yourReceiver, theFilter);
         }
-    }
+    }*/
+    private synchronized void registerReceiverGPS() {
+/*        if (yourReceiver == null) {
+           // INTENT FILTER FOR GPS MONITORING
+            final IntentFilter theFilter = new IntentFilter();
+            theFilter.addAction(ACTION_GPS);
+            yourReceiver = new LocationSettingsBroadcastReceiver();
+            registerReceiver(yourReceiver, theFilter);
+        }*/
 
+        if (yourReceiver == null) {
+            Log.d(TAG, "Registering receiver");
+            final IntentFilter theFilter = new IntentFilter(LocationManager.PROVIDERS_CHANGED_ACTION);
+            //theFilter.addAction(ACTION_GPS);
+            theFilter.addAction(LocationManager.PROVIDERS_CHANGED_ACTION);
+            //theFilter.addAction(LocationManager.MODE_CHANGED_ACTION);
+            yourReceiver = new LocationSettingsBroadcastReceiver();
+            registerReceiver(yourReceiver, theFilter);
+
+        }
+
+    }
 
 
 

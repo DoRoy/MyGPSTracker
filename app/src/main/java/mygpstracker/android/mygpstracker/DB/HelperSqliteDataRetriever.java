@@ -7,7 +7,7 @@ import android.support.annotation.NonNull;
 
 import com.ashokvarma.sqlitemanager.SqliteDataRetriever;
 
-//TODO - try to make this work https://android-arsenal.com/details/1/7021
+// https://android-arsenal.com/details/1/7021
 
 public class HelperSqliteDataRetriever implements SqliteDataRetriever {
     SQLiteOpenHelper mSqliteHelper;

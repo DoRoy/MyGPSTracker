@@ -74,7 +74,7 @@
 
 
         <activity
-            android:name=".Sensors$ActivityTest"
+            android:name=".Sensors.ActivityTest"
             android:label="@string/activity_sensors"
             android:parentActivityName=".MainActivity">
             <meta-data
@@ -83,7 +83,7 @@
         </activity>
 
         <activity
-            android:name=".Places$ActivityPlaces"
+            android:name=".Places.ActivityPlaces"
             android:label="@string/activity_places"
             android:screenOrientation="portrait"
             android:parentActivityName=".MainActivity">
@@ -109,7 +109,7 @@
         </activity>-->
 
         <activity
-            android:name=".ActivityDetectionPackage$ActivityDetectionActivity"
+            android:name=".ActivityDetectionPackage.ActivityDetectionActivity"
             android:screenOrientation="portrait"
             android:parentActivityName=".MainActivity">
             <meta-data
@@ -117,7 +117,7 @@
                 android:value=".MainActivity"/>
         </activity>
         <activity
-            android:name=".Review$ReviewActivity"
+            android:name=".Review.ReviewActivity"
             android:screenOrientation="portrait"
             android:parentActivityName=".MainActivity">
             <meta-data
@@ -156,6 +156,7 @@
         <service android:name=".BackgroundServicePackage.CollectData.PlaceBackgroundService" />
         <service android:name=".BackgroundServicePackage.SendData.SendTablesBackgroundService" />
         <service android:name=".BackgroundServicePackage.CollectData.SensorBackgroundService" />
+        <service android:name=".BackgroundServicePackage.CollectData.CallLogBackgroundService" />
 
 
         <receiver

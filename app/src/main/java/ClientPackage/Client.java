@@ -30,22 +30,24 @@ public class Client  extends AsyncTask<String, Void, Boolean> {
         this.clientStrategy = clientStrategy;
     }
 
-
+    /**
+     * A method that initiate the communication with the server
+     */
     private void communicateWithServer() {
         Socket theServer = null;
         try {
-            System.out.println("Trying to Created Socket");
+            //System.out.println("Trying to Created Socket");
             // Create the Socket with the server
             theServer = new Socket(serverIP, serverPort);
 
-            System.out.println(String.format("Client: Client is connected to server (IP: %s, port: %s)", serverIP, serverPort));
-            System.out.println(String.format("Client: Client Details (Remote: %s, InetAddress: %s, SocketAddress: %s)", theServer.getRemoteSocketAddress(), theServer.getInetAddress(), theServer.getLocalSocketAddress().toString()));
+            //System.out.println(String.format("Client: Client is connected to server (IP: %s, port: %s)", serverIP, serverPort));
+            //System.out.println(String.format("Client: Client Details (Remote: %s, InetAddress: %s, SocketAddress: %s)", theServer.getRemoteSocketAddress(), theServer.getInetAddress(), theServer.getLocalSocketAddress().toString()));
 
             // Call to the handling function
             clientStrategy.clientStrategy(theServer.getInputStream(), theServer.getOutputStream());
             theServer.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            //e.printStackTrace();
         }
         finally {
             // close all the streams and the server socket

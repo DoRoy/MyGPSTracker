@@ -61,7 +61,7 @@ public abstract class ABackgroundService extends Service {
         super.onDestroy();
 
         Intent broadcastIntent = new Intent(this, getClassChild());
-        sendBroadcast(broadcastIntent);
+        //sendBroadcast(broadcastIntent);
         if (timer != null){
             timer.cancel();
             timer = null;
@@ -136,14 +136,14 @@ public abstract class ABackgroundService extends Service {
 
     protected String getTimeDescriptionForSampling(){
         String ans = "";
-        if (period < 1)
-            ans = String.valueOf(period * 60 ) + " Seconds";
-        else if (1 <= period && period < 60)
-            ans = String.valueOf(period) + " Minutes";
-        else if (60 <= period && period < 1440)
-            ans = String.valueOf(period / 60 ) + " Hours";
-        else if (1440 <= period)
-            ans = String.valueOf(period / 1440) + " Days";
+        if (period < 1000 * 60)
+            ans = String.valueOf(period / 1000 ) + " Seconds";
+        else if (1000 * 60 <= period && period < 1000 * 60 * 60)
+            ans = String.valueOf(period / 1000 / 60) + " Minutes";
+        else if (1000 * 60 * 60 <= period && period < 1000 * 60 * 60 * 24)
+            ans = String.valueOf(period / 1000 / 60 / 60 ) + " Hours";
+        else if (1000 * 60 * 60 * 24 <= period)
+            ans = String.valueOf(period / 1000 / 60 / 60 / 24) + " Days";
 
         return ans;
     }

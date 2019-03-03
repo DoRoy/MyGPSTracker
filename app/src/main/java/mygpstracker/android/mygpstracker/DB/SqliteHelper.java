@@ -13,6 +13,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import mygpstracker.android.mygpstracker.Battery.BatteryInfoWrapper;
 
@@ -32,6 +33,7 @@ public class SqliteHelper extends SQLiteOpenHelper {
     public static final String TABLE_VISITED_PLACES = "visited_places";
     public static final String TABLE_SENSORS = "sensors";
     public static final String TABLE_BATTERY = "battery";
+    public static final String TABLE_CALLS = "calls";
 
     // Common column names
     private static final String KEY_ID = "id";
@@ -63,6 +65,7 @@ public class SqliteHelper extends SQLiteOpenHelper {
     // SENSORS Table - Columns name
     private static final String KEY_SENSOR_NAME = "sensor_name";
     private static final String KEY_RECORD = "record";
+/*
     private static final String KEY_MAX_VALUE = "max_value";
     private static final String KEY_MIN_VALUE = "min_value";
     private static final String KEY_MEAN_VALUE = "mean_value";
@@ -70,12 +73,21 @@ public class SqliteHelper extends SQLiteOpenHelper {
     private static final String KEY_DEVIATION_VALUE = "deviation_value";
     private static final String KEY_POWER_VALUE = "power_value";
     private static final String KEY_MAX_RANGE_VALUE = "maxRange_value";
-
-
+*/
 
     // VISITED_PLACES - Columns name
     private static final String KEY_PLACE_ID = "place_id";
     private static final String KEY_LIKELIHOOD = "likelihood";
+
+    // Calls Table - Columns name
+    private static final String KEY_CALLS_COMMITTED = "calls_committed";
+    private static final String KEY_CALLS_UNCOMMITTED = "calls_uncommitted";
+    private static final String KEY_MAX_VALUE = "max_value";
+    private static final String KEY_MIN_VALUE = "min_value";
+    private static final String KEY_SUM_DURATION = "mean_value";
+    private static final String KEY_MEDIAN_VALUE = "median_value";
+    private static final String KEY_DEVIATION_VALUE = "deviation_value";
+
 
     //Table Create Statements
     // Places table create statement
@@ -118,6 +130,7 @@ public class SqliteHelper extends SQLiteOpenHelper {
             +       KEY_SENSOR_NAME + " TEXT,"
             +       KEY_RECORD + " TEXT,"
             +       "PRIMARY KEY (" + KEY_CREATED_AT + "," + KEY_SENSOR_NAME + "));";
+
 /*
     private static final String CREATE_TABLE_SENSORS = "CREATE TABLE "+ TABLE_SENSORS
             + "(" + KEY_CREATED_AT + " DATETIME,"
@@ -131,8 +144,19 @@ public class SqliteHelper extends SQLiteOpenHelper {
             +       KEY_MAX_RANGE_VALUE + " TEXT,"
             +       "PRIMARY KEY (" + KEY_CREATED_AT + "," + KEY_SENSOR_NAME + "));";
 */
+// Call Information table create statement
+private static final String CREATE_TABLE_CALLS = "CREATE TABLE "+ TABLE_CALLS
+        + "(" + KEY_CREATED_AT + " DATETIME PRIMARY KEY,"
+        +       KEY_CALLS_UNCOMMITTED + " TEXT,"
+        +       KEY_CALLS_COMMITTED + " TEXT,"
+        +       KEY_MAX_VALUE + " TEXT,"
+        +       KEY_MIN_VALUE  + " TEXT,"
+        +       KEY_SUM_DURATION + " TEXT,"
+        +       KEY_MEDIAN_VALUE  + " TEXT,"
+        +       KEY_DEVIATION_VALUE + " TEXT);";
 
 
+    private static ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
 
     public SqliteHelper(Context context){
         super(context,DATABASE_NAME,null, DATABASE_VERSION);
@@ -148,6 +172,7 @@ public class SqliteHelper extends SQLiteOpenHelper {
         db.execSQL(CREATE_TABLE_BATTERY);
         db.execSQL(CREATE_TABLE_VISITED_PLACES);
         db.execSQL(CREATE_TABLE_SENSORS);
+        db.execSQL(CREATE_TABLE_CALLS);
     }
 
     @Override
@@ -160,27 +185,71 @@ public class SqliteHelper extends SQLiteOpenHelper {
         db.setVersion(newVersion);
     }
 
+    /**
+     * Delete all the tables.
+     * @param db
+     */
     private void deleteTables(SQLiteDatabase db){
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_PLACES);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_BATTERY);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_VISITED_PLACES);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_SENSORS);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_CALLS);
     }
 
+    private long writeContent(ContentValues values, String tableName){
+        readWriteLock.writeLock().lock();
+        SQLiteDatabase db = this.getWritableDatabase();
+        long returnedValue = -1;
+        try {
+            returnedValue = db.insertOrThrow(tableName, null, values);
+
+        }catch (SQLException e){
+//            e.printStackTrace();
+        }
+        finally {
+            if (db.isOpen()) db.close();
+            db.close();
+            readWriteLock.writeLock().unlock();
+        }
+        return returnedValue;
+    }
+
+    /**
+     * Delete and recreate the tables.
+     * The method updates the table if there was a change in the table format.
+     */
     public void resetTables(){
+        readWriteLock.writeLock().lock();
         SQLiteDatabase db = this.getWritableDatabase();
         deleteTables(db);
         onCreate(db);
         db.close();
+        readWriteLock.writeLock().unlock();
     }
 
-    public void resetTable(String tableName){
+    /**
+     * Reset a specific table.
+     * @param tableName - The table name
+     * @return  - True if worked, False otherwise
+     */
+    public boolean resetTable(String tableName){
         if (checkTableName(tableName)) {
+            readWriteLock.writeLock().lock();
             SQLiteDatabase db = this.getWritableDatabase();
             db.execSQL("DELETE FROM " + tableName);
+            db.close();
+            readWriteLock.writeLock().unlock();
+            return true;
         }
+        return false;
     }
 
+    /**
+     * Checks if the table name exist in the scope of this class.
+     * @param tableName
+     * @return
+     */
     private boolean checkTableName(String tableName){
         String[] tablesNames = getAllTablesNames();
         for (String table: tablesNames) {
@@ -190,19 +259,26 @@ public class SqliteHelper extends SQLiteOpenHelper {
         return false;
     }
 
+    /**
+     * Gets all the existing tables names
+     * @return
+     */
     public String[] getAllTablesNames(){
-        return new String[]{TABLE_BATTERY, TABLE_PLACES, TABLE_VISITED_PLACES , TABLE_SENSORS};
+        return new String[]{TABLE_BATTERY, TABLE_PLACES, TABLE_VISITED_PLACES , TABLE_SENSORS, TABLE_CALLS};
     }
 
     /**
      * Create a string formatted as csv file from the given table name
-     * @param tableName
-     * @return
+     * @param tableName - A name of the an Existing table, can be found as public static attributes.
+     * @return  - A String of all the data in the table, null if the tableName doesn't exist.
      */
     public String getCSVString(String tableName){
+        if (!checkTableName(tableName))
+            return null;
         SQLiteDatabase db = null;
         Cursor cursor = null;
         try {
+            readWriteLock.readLock().lock();
             db = this.getReadableDatabase();
             cursor = db.rawQuery("SELECT * FROM " + tableName, null);
             CSVBuilder csvBuilder = new CSVBuilder();
@@ -224,6 +300,7 @@ public class SqliteHelper extends SQLiteOpenHelper {
             }
             cursor.close();
             db.close();
+            readWriteLock.readLock().unlock();
 
             // If the table is empty return null so we wont send empty files, otherwise return the csv String
             return ((emptyTable) ? null : csvBuilder.toString());
@@ -233,6 +310,7 @@ public class SqliteHelper extends SQLiteOpenHelper {
         finally {
             if (db != null && db.isOpen()) db.close();
             if (cursor != null && !cursor.isClosed()) cursor.close();
+            readWriteLock.readLock().unlock();
         }
 
         return null;
@@ -242,42 +320,31 @@ public class SqliteHelper extends SQLiteOpenHelper {
 
     // -------------------- Sensors Table Methods -------------------- //
 
+    /**
+     * Add a record to Sensors table
+     * @param sensorName    - The name of the sensor
+     * @param record    - A String representing the data
+     * @return
+     */
     public long createSensorRecord(String sensorName, String record){
-        //TODO - figure out how to build this table with all the different data types
-        SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
         values.put(KEY_SENSOR_NAME, sensorName);
         values.put(KEY_CREATED_AT, getDateTime());
         values.put(KEY_RECORD, record);
         // insert row
-        long placeNumber = 0;
-        try {
+        long placeNumber = writeContent(values,TABLE_SENSORS);
+/*        try {
             placeNumber = db.insertOrThrow(TABLE_SENSORS, null, values);
         }catch (SQLException e){
 //            e.printStackTrace();
         }
         finally {
             if (db.isOpen()) db.close();
-        }
+        }*/
 
         return placeNumber;
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
     // -------------------- Places Table Methods -------------------- //
@@ -288,42 +355,19 @@ public class SqliteHelper extends SQLiteOpenHelper {
      * @return number of items in places table
      */
     public long createPlace(Place place){
-        SQLiteDatabase db = this.getWritableDatabase();
+        //SQLiteDatabase db = this.getWritableDatabase();
 
-        ContentValues values = new ContentValues();
-        values.put(KEY_PLACE, place.getId());
-        values.put(KEY_NAME, place.getName().toString());
-        values.put(KEY_LAT, place.getLatLng().latitude);
-        values.put(KEY_LON, place.getLatLng().longitude);
-        try{
-            values.put(KEY_ADDRESS, Objects.requireNonNull(place.getAddress()).toString());
-        }catch(NullPointerException e){
-            values.put(KEY_ADDRESS, (Byte) null);
-        }
-        values.put(KEY_RATE, place.getRating());
-        try{
-            values.put(KEY_PHONE, Objects.requireNonNull(place.getPhoneNumber()).toString());
-        }catch(NullPointerException e){
-            values.put(KEY_PHONE, (Byte) null);
-        }
-        values.put(KEY_PRICE, place.getPriceLevel());
-        try {
-            values.put(KEY_URI, Objects.requireNonNull(place.getWebsiteUri()).toString());
-        }catch(NullPointerException e){
-            values.put(KEY_URI, (Byte) null);
-        }
-        values.put(KEY_CREATED_AT, getDateTime());
-
+        ContentValues values = createContentValueForPlaces(place);
         // insert row
-        long placeNumber = 0;
-        try {
+        long placeNumber = writeContent(values,TABLE_PLACES);
+/*        try {
             placeNumber = db.insertOrThrow(TABLE_PLACES, null, values);
         }catch (SQLException e){
 //            e.printStackTrace();
         }
         finally {
             if (db.isOpen()) db.close();
-        }
+        }*/
 
         return placeNumber;
     }
@@ -352,21 +396,38 @@ public class SqliteHelper extends SQLiteOpenHelper {
     public int updatePlace(Place place) {
         SQLiteDatabase db = this.getWritableDatabase();
 
+        ContentValues values = createContentValueForPlaces(place);
+
+        // updating row
+        return db.update(TABLE_PLACES, values, KEY_PLACE + " = ?",
+                new String[] { String.valueOf(place.getId()) });
+    }
+
+    private ContentValues createContentValueForPlaces(Place place){
         ContentValues values = new ContentValues();
         values.put(KEY_PLACE, place.getId());
         values.put(KEY_NAME, place.getName().toString());
         values.put(KEY_LAT, place.getLatLng().latitude);
         values.put(KEY_LON, place.getLatLng().longitude);
-        values.put(KEY_ADDRESS, place.getAddress().toString());
+        try{
+            values.put(KEY_ADDRESS, Objects.requireNonNull(place.getAddress()).toString());
+        }catch(NullPointerException e){
+            values.put(KEY_ADDRESS, (Byte) null);
+        }
         values.put(KEY_RATE, place.getRating());
-        values.put(KEY_PHONE, place.getPhoneNumber().toString());
+        try{
+            values.put(KEY_PHONE, Objects.requireNonNull(place.getPhoneNumber()).toString());
+        }catch(NullPointerException e){
+            values.put(KEY_PHONE, (Byte) null);
+        }
         values.put(KEY_PRICE, place.getPriceLevel());
-        values.put(KEY_URI, place.getWebsiteUri().toString());
+        try {
+            values.put(KEY_URI, Objects.requireNonNull(place.getWebsiteUri()).toString());
+        }catch(NullPointerException e){
+            values.put(KEY_URI, (Byte) null);
+        }
         values.put(KEY_CREATED_AT, getDateTime());
-
-        // updating row
-        return db.update(TABLE_PLACES, values, KEY_PLACE + " = ?",
-                new String[] { String.valueOf(place.getId()) });
+        return values;
     }
 
 
@@ -383,7 +444,7 @@ public class SqliteHelper extends SQLiteOpenHelper {
     // -------------------- Visited-Places Table Methods -------------------- //
 
     /**
-     * This method receive a place, insert the place to the places, and to the visited_places
+     * This method receives a place, insert the place to the places, and to the visited_places
      * @param place
      * @param likelihood
      * @return
@@ -395,23 +456,26 @@ public class SqliteHelper extends SQLiteOpenHelper {
     }
 
 
-        /**
-         * Creating visited_place
-         */
+    /**
+     * Create a new visited place record.
+     * @param place_id  - The Place's ID.
+     * @param likelihood    - The likelihood that the person is in the place
+     * @return  - the long returned from the db.insert method.
+     * */
     public long createVisitedPlace(String place_id, float likelihood) {
-        SQLiteDatabase db = this.getWritableDatabase();
+        //SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
         values.put(KEY_PLACE_ID, place_id);
         values.put(KEY_LIKELIHOOD, likelihood);
         values.put(KEY_CREATED_AT, getDateTime());
-        long id = 0;
-        try {
+        long id = writeContent(values, TABLE_VISITED_PLACES);
+/*        try {
             id = db.insertOrThrow(TABLE_VISITED_PLACES, null, values);
         }catch (SQLException e){
 //            e.printStackTrace();
         }
-        closeDB();
+        closeDB();*/
         return id;
     }
 
@@ -419,9 +483,13 @@ public class SqliteHelper extends SQLiteOpenHelper {
 
     // -------------------- Battery Table Methods -------------------- //
 
+    /**
+     *  Receive a BatteryInfoWrapper and insert it to the Battery table
+     * @param batteryInfoWrapper  - A wrapper that wraps the information we wish to insert to the table
+     * @return  - the long returned from the db.insert method.
+     */
     public long createBatteryInfo(BatteryInfoWrapper batteryInfoWrapper){
-        SQLiteDatabase db = this.getWritableDatabase();
-
+        //SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(KEY_CHARGING_TYPE, batteryInfoWrapper.getAttribute(KEY_CHARGING_TYPE));
         values.put(KEY_LEVEL, batteryInfoWrapper.getAttribute(KEY_LEVEL));
@@ -433,18 +501,79 @@ public class SqliteHelper extends SQLiteOpenHelper {
         values.put(KEY_CAPACITY , batteryInfoWrapper.getAttribute(KEY_CAPACITY));
         values.put(KEY_TECHNOLOGY , batteryInfoWrapper.getAttribute(KEY_TECHNOLOGY));
         values.put(KEY_CREATED_AT, getDateTime());
-
-        long id = db.insert(TABLE_BATTERY, null,values);
-        closeDB();
+//        long id = db.insert(TABLE_BATTERY, null, values);
+        long id = writeContent(values,TABLE_BATTERY);
+        //closeDB();
         return id;
     }
 
+    // -------------------- Calls Table Methods -------------------- //
 
-    // closing database
+    /**
+     *  Receive a CallsInfoWrapper and insert it to the Calls table
+     * @param callsInfoWrapper  - A wrapper that wraps the information we wish to insert to the table
+     * @return  - the long returned from the db.insert method.
+     */
+    public long createCallsRecord(CallsInfoWrapper callsInfoWrapper){
+        // get a writable db
+        //SQLiteDatabase db = this.getWritableDatabase();
+        // create the content value we wish to insert
+        ContentValues values = new ContentValues();
+        values.put(KEY_CREATED_AT,getDateTime());
+        values.put(KEY_CALLS_UNCOMMITTED,callsInfoWrapper.getUncommitted());
+        values.put(KEY_CALLS_COMMITTED ,callsInfoWrapper.getCommitted());
+        values.put(KEY_MAX_VALUE , callsInfoWrapper.getMax());
+        values.put(KEY_MIN_VALUE ,  callsInfoWrapper.getMin());
+        values.put(KEY_SUM_DURATION , callsInfoWrapper.getDuration());
+        values.put(KEY_MEDIAN_VALUE ,callsInfoWrapper.getMedian());
+        values.put(KEY_DEVIATION_VALUE ,callsInfoWrapper.getDeviation());
+        // insert the data to the DB
+        //long id = db.insert(TABLE_CALLS, null,values);
+        long id = writeContent(values, TABLE_CALLS);
+//        closeDB();
+        return id;
+
+    }
+
+
+
+    // -------------------- General Methods -------------------- //
+
+
+    /**
+     * Closes the DB in case it is open
+     */
     public void closeDB() {
         SQLiteDatabase db = this.getReadableDatabase();
         if (db != null && db.isOpen())
             db.close();
+    }
+
+    /**
+     * Receives a table name and return the last time-stamp of inserted data.
+     * @param tableName
+     * @return  - A string of the last timestamp in the table, null if the table is empty or the table name doesn't exist.
+     */
+    public String getLastTimeStamp(String tableName) {
+        if (checkTableName(tableName)) {
+            readWriteLock.readLock().lock();
+            SQLiteDatabase db = this.getReadableDatabase();
+            String query = "SELECT " + KEY_CREATED_AT + " FROM " + tableName + " ORDER BY " + KEY_CREATED_AT + " DESC LIMIT 1";
+            Cursor cursor = db.rawQuery(query, null);
+            if (cursor.moveToNext()) {
+                int index = cursor.getColumnIndex(KEY_CREATED_AT);
+                String timeCreated = cursor.getString(index);
+                cursor.close();
+                db.close();
+                readWriteLock.readLock().unlock();
+                return timeCreated;
+            }
+            if (!cursor.isClosed()) cursor.close();
+            if (db.isOpen())db.close();
+            readWriteLock.readLock().unlock();
+
+        }
+        return null;
     }
 
 

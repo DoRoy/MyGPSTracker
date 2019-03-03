@@ -7,6 +7,7 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.google.android.gms.location.ActivityRecognitionClient;
@@ -15,9 +16,9 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 
 public class BackgroundDetectedActivitiesService extends Service {
+
     private static final String TAG = BackgroundDetectedActivitiesService.class.getSimpleName();
 
-    private Intent mIntentService;
     private PendingIntent mPendingIntent;
     private ActivityRecognitionClient mActivityRecognitionClient;
 
@@ -29,15 +30,12 @@ public class BackgroundDetectedActivitiesService extends Service {
         }
     }
 
-    public BackgroundDetectedActivitiesService() {
-
-    }
-
     @Override
     public void onCreate() {
+        Log.d(TAG,"onCreate");
         super.onCreate();
         mActivityRecognitionClient = new ActivityRecognitionClient(this);
-        mIntentService = new Intent(this, DetectedActivitiesIntentService.class);
+        Intent mIntentService = new Intent(this, DetectedActivitiesIntentService.class);
         mPendingIntent = PendingIntent.getService(this, 1, mIntentService, PendingIntent.FLAG_UPDATE_CURRENT);
         requestActivityUpdatesButtonHandler();
     }
@@ -50,11 +48,13 @@ public class BackgroundDetectedActivitiesService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.d(TAG,"onStartCommand");
         super.onStartCommand(intent, flags, startId);
         return START_STICKY;
     }
 
     public void requestActivityUpdatesButtonHandler() {
+        Log.d(TAG,"requestActivityUpdatesButtonHandler");
         Task<Void> task = mActivityRecognitionClient.requestActivityUpdates(
                 Constants.DETECTION_INTERVAL_IN_MILLISECONDS,
                 mPendingIntent);
@@ -62,6 +62,7 @@ public class BackgroundDetectedActivitiesService extends Service {
         task.addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void result) {
+                Log.d(getClass().getName(), "onSuccess");
                 Toast.makeText(getApplicationContext(),
                         "Successfully requested activity updates",
                         Toast.LENGTH_SHORT)
@@ -72,6 +73,7 @@ public class BackgroundDetectedActivitiesService extends Service {
         task.addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
+                Log.d(getClass().getName(), "onFailure");
                 Toast.makeText(getApplicationContext(),
                         "Requesting activity updates failed to start",
                         Toast.LENGTH_SHORT)
@@ -81,6 +83,7 @@ public class BackgroundDetectedActivitiesService extends Service {
     }
 
     public void removeActivityUpdatesButtonHandler() {
+        Log.d(TAG,"removeActivityUpdatesButtonHandler");
         Task<Void> task = mActivityRecognitionClient.removeActivityUpdates(
                 mPendingIntent);
         task.addOnSuccessListener(new OnSuccessListener<Void>() {

@@ -175,7 +175,7 @@ public abstract class ASensorMeasures implements ISensor {
     protected abstract Map<String, Double> getStatisticsOfData();
 
 
-    protected double getMax(@NonNull float[] data){
+    public static double getMax(@NonNull float[] data){
         double ans = Double.MIN_VALUE;
         for(int i = 0; i < data.length; i++){
             ans = Math.max(ans,data[i]);
@@ -183,7 +183,7 @@ public abstract class ASensorMeasures implements ISensor {
         return ans;
     }
 
-    protected double getMin(@NonNull float[] data){
+    public static double getMin(@NonNull float[] data){
         double ans = Double.MAX_VALUE;
         for(int i = 0; i < data.length; i++){
             ans = Math.min(ans,data[i]);
@@ -191,7 +191,7 @@ public abstract class ASensorMeasures implements ISensor {
         return ans;
     }
 
-    protected double getMedian(@NonNull float[] data){
+    public static double getMedian(@NonNull float[] data){
         // First we sort the array
         Arrays.sort(data);
         int n = data.length;
@@ -202,7 +202,7 @@ public abstract class ASensorMeasures implements ISensor {
         return (double)(data[(n - 1) / 2] + data[n / 2]) / 2.0;
     }
 
-    protected double getMean(@NonNull float[] data){
+    public static double getMean(@NonNull float[] data){
         double sum = 0;
         for(int i = 0; i < data.length; i ++){
             sum += data[i];
@@ -210,7 +210,7 @@ public abstract class ASensorMeasures implements ISensor {
         return sum / data.length;
     }
 
-    protected double getDeviation(@NonNull float[] data){
+    public static double getDeviation(@NonNull float[] data){
         double sum = 0;
         double mean = getMean(data);
         for(int i = 0; i < data.length; i ++){
@@ -219,11 +219,11 @@ public abstract class ASensorMeasures implements ISensor {
         return Math.sqrt(sum / data.length);
     }
 
-    protected double getRange(@NonNull float[] data){
+    public static double getRange(@NonNull float[] data){
         return getMax(data) - getMin(data);
     }
 
-    protected double getCorrelationBetweenTwoAxis(@NonNull float[] data1, @NonNull float[] data2){
+    public static double getCorrelationBetweenTwoAxis(@NonNull float[] data1, @NonNull float[] data2){
         double data1_mean = getMean(data1);
         double data2_mean = getMean(data2);
         double mone = 0, mechane1 = 0, mechane2 = 0;
@@ -235,7 +235,7 @@ public abstract class ASensorMeasures implements ISensor {
         return mone / Math.sqrt(mechane1 * mechane2);
     }
 
-    protected  Map<String, Double> getCorrelations(float[][] data){
+    public static  Map<String, Double> getCorrelations(float[][] data){
         Map<String, Double> map =  new Hashtable<>(15);
         for(int i = 0; i < data.length - 1; i ++){
             for(int j = i + 1; j <data.length; j ++){
