@@ -15,6 +15,7 @@ import android.widget.TextView;
 
 import com.google.android.gms.location.DetectedActivity;
 
+import mygpstracker.android.mygpstracker.BackgroundServicePackage.CollectData.BackgroundActivityTransitionService;
 import mygpstracker.android.mygpstracker.R;
 
 
@@ -41,6 +42,7 @@ public class ActivityDetectionActivity extends Activity {
                 if (intent.getAction().equals(Constants.BROADCAST_DETECTED_ACTIVITY)) {
                     int type = intent.getIntExtra("type", -1);
                     int confidence = intent.getIntExtra("confidence", 0);
+                    int transitionType = intent.getIntExtra("transitionType", 0);
                     handleUserActivity(type, confidence);
                 }
             }
@@ -149,6 +151,19 @@ public class ActivityDetectionActivity extends Activity {
     private void startTracking() {
         Log.d(TAG,"startTracking");
         // start the service
+        Intent intent1 = new Intent(ActivityDetectionActivity.this, BackgroundActivityTransitionService.class);
+        startService(intent1);
+    }
+
+    private void stopTracking() {
+        Log.d(TAG,"stopTracking");
+        Intent intent = new Intent(ActivityDetectionActivity.this, BackgroundActivityTransitionService.class);
+        stopService(intent);
+    }
+/*
+    private void startTracking() {
+        Log.d(TAG,"startTracking");
+        // start the service
         Intent intent1 = new Intent(ActivityDetectionActivity.this, BackgroundDetectedActivitiesService.class);
         startService(intent1);
     }
@@ -158,6 +173,7 @@ public class ActivityDetectionActivity extends Activity {
         Intent intent = new Intent(ActivityDetectionActivity.this, BackgroundDetectedActivitiesService.class);
         stopService(intent);
     }
+*/
 
     @Override
     protected void onDestroy() {

@@ -16,7 +16,7 @@ public class PlaceBackgroundService extends ABackgroundService {
     @Override
     public void onCreate() {
         myPlaces = new MyPlaces(getApplicationContext());
-        setPeriod(getDoubleInMinutes(1));
+        setPeriod(getDoubleInHours(0.25));
         super.onCreate();
     }
 

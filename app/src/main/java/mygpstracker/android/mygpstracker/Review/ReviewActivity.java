@@ -42,6 +42,8 @@ import java.util.Map;
 import java.util.TimerTask;
 
 import mygpstracker.android.mygpstracker.AppExecutors;
+import mygpstracker.android.mygpstracker.DB.ReviewInfoWrapper;
+import mygpstracker.android.mygpstracker.DB.SqliteHelper;
 import mygpstracker.android.mygpstracker.Places.MyPlaces;
 import mygpstracker.android.mygpstracker.Places.PlaceArrayAdapter;
 import mygpstracker.android.mygpstracker.R;
@@ -270,7 +272,7 @@ public class ReviewActivity extends Activity {
     }
 
     private void setInPlace(boolean inPlace){
-        SimpleDateFormat formatterDate = new SimpleDateFormat("dd-MM-yyyy");
+        SimpleDateFormat formatterDate = new SimpleDateFormat("yyyy-MM-dd");
         SimpleDateFormat formatterTime = new SimpleDateFormat(" HH:mm");
         Calendar.getInstance().getTime();
         Date currentTime = Calendar.getInstance().getTime();
@@ -294,6 +296,10 @@ public class ReviewActivity extends Activity {
         System.out.println("Companion: " + company_spinner.getSelectedItem());
         System.out.println("Frequency: " + freq_spinner.getSelectedItem());
         System.out.println("Purpose: " + purpose_spinner.getSelectedItem());
+
+        ReviewInfoWrapper reviewInfoWrapper = new ReviewInfoWrapper(chosenPlaceID, ""+EditTextFeedbackBody.getText(),review_date.getText() + " " + review_time.getText(), ""+company_spinner.getSelectedItem(),""+freq_spinner.getSelectedItem(),""+ purpose_spinner.getSelectedItem(), String.valueOf(ratings));
+        SqliteHelper sqliteHelper = new SqliteHelper(getApplicationContext());
+        sqliteHelper.createReviewRecord(reviewInfoWrapper);
     }
 
 }

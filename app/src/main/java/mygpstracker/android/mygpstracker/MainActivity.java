@@ -241,7 +241,7 @@ public class MainActivity extends AppCompatActivity {
             unregisterReceiver(yourReceiver);
             yourReceiver = null;
         }
-        //stopServices();
+        stopServices();
 
         super.onDestroy();
 

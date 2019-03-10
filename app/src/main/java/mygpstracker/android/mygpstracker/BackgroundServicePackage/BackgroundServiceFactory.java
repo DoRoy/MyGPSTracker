@@ -1,13 +1,10 @@
 package mygpstracker.android.mygpstracker.BackgroundServicePackage;
 
-import android.content.Context;
-import android.content.Intent;
-
 import java.util.ArrayList;
 
+import mygpstracker.android.mygpstracker.BackgroundServicePackage.CollectData.BackgroundActivityTransitionService;
 import mygpstracker.android.mygpstracker.BackgroundServicePackage.CollectData.BatteryInfoBackgroundService;
 import mygpstracker.android.mygpstracker.BackgroundServicePackage.CollectData.CallLogBackgroundService;
-import mygpstracker.android.mygpstracker.BackgroundServicePackage.CollectData.PlaceBackgroundService;
 import mygpstracker.android.mygpstracker.BackgroundServicePackage.CollectData.SensorBackgroundService;
 import mygpstracker.android.mygpstracker.BackgroundServicePackage.SendData.SendTablesBackgroundService;
 
@@ -21,6 +18,7 @@ public class BackgroundServiceFactory {
         classList.add(SendTablesBackgroundService.class);
         classList.add(SensorBackgroundService.class);
         classList.add(CallLogBackgroundService.class);
+        classList.add(BackgroundActivityTransitionService.class);
 
         return classList;
     }

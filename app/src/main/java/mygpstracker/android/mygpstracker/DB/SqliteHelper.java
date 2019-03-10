@@ -34,6 +34,9 @@ public class SqliteHelper extends SQLiteOpenHelper {
     public static final String TABLE_SENSORS = "sensors";
     public static final String TABLE_BATTERY = "battery";
     public static final String TABLE_CALLS = "calls";
+    public static final String TABLE_NETWORK = "network";
+    public static final String TABLE_REVIEWS = "reviews";
+    public static final String TABLE_ACTIVITY = "activities";
 
     // Common column names
     private static final String KEY_ID = "id";
@@ -88,6 +91,21 @@ public class SqliteHelper extends SQLiteOpenHelper {
     private static final String KEY_MEDIAN_VALUE = "median_value";
     private static final String KEY_DEVIATION_VALUE = "deviation_value";
 
+    // NETWORK Table - Columns names
+    private static final String KEY_TYPE = "type";
+    private static final String KEY_SPEED = "speed";
+
+    // REVIEWS Table - Columns names
+    private static final String KEY_REVIEW = "review";
+    private static final String KEY_DATE_OF_VISIT = "date_of_visit";
+    private static final String KEY_COMPANION = "companion";
+    private static final String KEY_VISITING_FREQUENCY = "visiting_frequency";
+    private static final String KEY_VISITING_PURPOSE = "visiting_purpose";
+
+    // ACTIVITY Table - Columns names
+    private static final String KEY_ACTIVITY = "activity";
+    private static final String KEY_CONFIDENCE = "confidence";
+
 
     //Table Create Statements
     // Places table create statement
@@ -131,21 +149,9 @@ public class SqliteHelper extends SQLiteOpenHelper {
             +       KEY_RECORD + " TEXT,"
             +       "PRIMARY KEY (" + KEY_CREATED_AT + "," + KEY_SENSOR_NAME + "));";
 
-/*
-    private static final String CREATE_TABLE_SENSORS = "CREATE TABLE "+ TABLE_SENSORS
-            + "(" + KEY_CREATED_AT + " DATETIME,"
-            +       KEY_SENSOR_NAME + " TEXT,"
-            +       KEY_MAX_VALUE + " TEXT,"
-            +       KEY_MIN_VALUE  + " TEXT,"
-            +       KEY_MEAN_VALUE + " TEXT,"
-            +       KEY_MEDIAN_VALUE  + " TEXT,"
-            +       KEY_DEVIATION_VALUE + " TEXT,"
-            +       KEY_POWER_VALUE  + " TEXT,"
-            +       KEY_MAX_RANGE_VALUE + " TEXT,"
-            +       "PRIMARY KEY (" + KEY_CREATED_AT + "," + KEY_SENSOR_NAME + "));";
-*/
-// Call Information table create statement
-private static final String CREATE_TABLE_CALLS = "CREATE TABLE "+ TABLE_CALLS
+
+    // Call Information table create statement
+    private static final String CREATE_TABLE_CALLS = "CREATE TABLE "+ TABLE_CALLS
         + "(" + KEY_CREATED_AT + " DATETIME PRIMARY KEY,"
         +       KEY_CALLS_UNCOMMITTED + " TEXT,"
         +       KEY_CALLS_COMMITTED + " TEXT,"
@@ -154,6 +160,30 @@ private static final String CREATE_TABLE_CALLS = "CREATE TABLE "+ TABLE_CALLS
         +       KEY_SUM_DURATION + " TEXT,"
         +       KEY_MEDIAN_VALUE  + " TEXT,"
         +       KEY_DEVIATION_VALUE + " TEXT);";
+
+    // Network Information table create statement
+    private static final String CREATE_TABLE_NETWORK = "CREATE TABLE "+ TABLE_NETWORK
+            + "(" + KEY_CREATED_AT + " DATETIME PRIMARY KEY,"
+            +       KEY_TYPE + " TEXT,"
+            +       KEY_SPEED + " TEXT);";
+
+    // Reviews table create statement
+    private static final String CREATE_TABLE_REVIEWS = "CREATE TABLE "+ TABLE_REVIEWS
+            + "(" + KEY_PLACE_ID + " TEXT,"
+            +       KEY_CREATED_AT + " DATETIME,"
+            +       KEY_REVIEW + " TEXT,"
+            +       KEY_DATE_OF_VISIT + " TEXT,"
+            +       KEY_COMPANION + " TEXT,"
+            +       KEY_VISITING_FREQUENCY + " TEXT,"
+            +       KEY_VISITING_PURPOSE + " TEXT,"
+            +       KEY_RATE + " FLOAT,"
+            +       "PRIMARY KEY (" + KEY_CREATED_AT + "," + KEY_PLACE_ID + "));";
+
+    // ACTIVITY Information table create statement
+    private static final String CREATE_TABLE_ACTIVITY = "CREATE TABLE "+ TABLE_ACTIVITY
+            + "(" + KEY_CREATED_AT + " DATETIME PRIMARY KEY,"
+            +       KEY_ACTIVITY + " TEXT);";
+//            +       KEY_CONFIDENCE + " TEXT);";
 
 
     private static ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
@@ -173,6 +203,9 @@ private static final String CREATE_TABLE_CALLS = "CREATE TABLE "+ TABLE_CALLS
         db.execSQL(CREATE_TABLE_VISITED_PLACES);
         db.execSQL(CREATE_TABLE_SENSORS);
         db.execSQL(CREATE_TABLE_CALLS);
+//        db.execSQL(CREATE_TABLE_NETWORK);
+        db.execSQL(CREATE_TABLE_REVIEWS);
+        db.execSQL(CREATE_TABLE_ACTIVITY);
     }
 
     @Override
@@ -190,12 +223,18 @@ private static final String CREATE_TABLE_CALLS = "CREATE TABLE "+ TABLE_CALLS
      * @param db
      */
     private void deleteTables(SQLiteDatabase db){
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_PLACES);
+        String[] tablesNames = this.getAllTablesNames();
+        for (String table: tablesNames) {
+            db.execSQL("DROP TABLE IF EXISTS " + table);
+        }
+/*        db.execSQL("DROP TABLE IF EXISTS " + TABLE_PLACES);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_BATTERY);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_VISITED_PLACES);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_SENSORS);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_CALLS);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_NETWORK);*/
     }
+
 
     private long writeContent(ContentValues values, String tableName){
         readWriteLock.writeLock().lock();
@@ -221,7 +260,7 @@ private static final String CREATE_TABLE_CALLS = "CREATE TABLE "+ TABLE_CALLS
      */
     public void resetTables(){
         readWriteLock.writeLock().lock();
-        SQLiteDatabase db = this.getWritableDatabase();
+        SQLiteDatabase db = getWritableDatabase();
         deleteTables(db);
         onCreate(db);
         db.close();
@@ -264,7 +303,7 @@ private static final String CREATE_TABLE_CALLS = "CREATE TABLE "+ TABLE_CALLS
      * @return
      */
     public String[] getAllTablesNames(){
-        return new String[]{TABLE_BATTERY, TABLE_PLACES, TABLE_VISITED_PLACES , TABLE_SENSORS, TABLE_CALLS};
+        return new String[]{TABLE_BATTERY, TABLE_PLACES, TABLE_VISITED_PLACES , TABLE_SENSORS, TABLE_CALLS, TABLE_REVIEWS, TABLE_ACTIVITY};
     }
 
     /**
@@ -535,6 +574,46 @@ private static final String CREATE_TABLE_CALLS = "CREATE TABLE "+ TABLE_CALLS
 
     }
 
+
+
+    // -------------------- Network Table Methods -------------------- //
+
+    public long createNetworkRecord(String type, String speed){
+        ContentValues values = new ContentValues();
+        values.put(KEY_CREATED_AT,getDateTime());
+        values.put(KEY_TYPE,type);
+        values.put(KEY_SPEED,speed);
+
+        return writeContent(values, TABLE_NETWORK);
+    }
+
+
+    // -------------------- Reviews Table Methods -------------------- //
+
+    public long createReviewRecord(ReviewInfoWrapper reviewInfoWrapper){
+        ContentValues values = new ContentValues();
+        values.put(KEY_CREATED_AT,getDateTime());
+        values.put(KEY_PLACE_ID,reviewInfoWrapper.getID());
+        values.put(KEY_REVIEW,reviewInfoWrapper.getReview());
+        values.put(KEY_DATE_OF_VISIT,reviewInfoWrapper.getDateOfVisit());
+        values.put(KEY_COMPANION,reviewInfoWrapper.getCompanion());
+        values.put(KEY_VISITING_FREQUENCY,reviewInfoWrapper.getFrequency());
+        values.put(KEY_VISITING_PURPOSE,reviewInfoWrapper.getPurpose());
+        values.put(KEY_RATE,reviewInfoWrapper.getRate());
+
+        return writeContent(values, TABLE_REVIEWS);
+    }
+
+    // -------------------- Activity Table Methods -------------------- //
+
+    public long createActivityRecord(String activity){
+        ContentValues values = new ContentValues();
+        values.put(KEY_CREATED_AT,getDateTime());
+        values.put(KEY_ACTIVITY, activity);
+//        values.put(KEY_CONFIDENCE, confidence);
+
+        return writeContent(values, TABLE_ACTIVITY);
+    }
 
 
     // -------------------- General Methods -------------------- //

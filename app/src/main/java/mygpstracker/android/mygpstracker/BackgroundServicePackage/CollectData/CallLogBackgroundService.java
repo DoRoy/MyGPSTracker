@@ -2,11 +2,9 @@ package mygpstracker.android.mygpstracker.BackgroundServicePackage.CollectData;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.TimerTask;
 
 import mygpstracker.android.mygpstracker.BackgroundServicePackage.ABackgroundService;
-import mygpstracker.android.mygpstracker.Battery.BatteryInfoWrapper;
 import mygpstracker.android.mygpstracker.DB.CallsInfoWrapper;
 import mygpstracker.android.mygpstracker.DB.SqliteHelper;
 import mygpstracker.android.mygpstracker.Sensors.CallLogInformation;

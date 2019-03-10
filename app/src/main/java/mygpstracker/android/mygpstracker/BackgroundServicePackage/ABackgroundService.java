@@ -13,6 +13,11 @@ import java.util.TimerTask;
 
 import mygpstracker.android.mygpstracker.DB.SqliteHelper;
 
+
+/**
+ * The abstract class that summarize most uses for collection and sending data
+ * Each class tha will inherit this class is suppose to work similar to this.
+ */
 public abstract class ABackgroundService extends Service {
 
     protected String TAG = getClassChild().getName();
@@ -61,7 +66,6 @@ public abstract class ABackgroundService extends Service {
         super.onDestroy();
 
         Intent broadcastIntent = new Intent(this, getClassChild());
-        //sendBroadcast(broadcastIntent);
         if (timer != null){
             timer.cancel();
             timer = null;

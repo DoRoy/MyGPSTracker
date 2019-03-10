@@ -19,7 +19,7 @@ public class SensorBackgroundService extends ABackgroundService {
 
     @Override
     public void onCreate() {
-        setPeriod(getDoubleInMinutes(0.5));
+        setPeriod(getDoubleInMinutes(5));
         super.onCreate();
     }
 

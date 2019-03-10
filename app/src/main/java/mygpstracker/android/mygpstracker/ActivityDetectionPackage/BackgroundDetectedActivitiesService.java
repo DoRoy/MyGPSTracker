@@ -37,7 +37,7 @@ public class BackgroundDetectedActivitiesService extends Service {
         mActivityRecognitionClient = new ActivityRecognitionClient(this);
         Intent mIntentService = new Intent(this, DetectedActivitiesIntentService.class);
         mPendingIntent = PendingIntent.getService(this, 1, mIntentService, PendingIntent.FLAG_UPDATE_CURRENT);
-        requestActivityUpdatesButtonHandler();
+
     }
 
     @Nullable
@@ -50,6 +50,7 @@ public class BackgroundDetectedActivitiesService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d(TAG,"onStartCommand");
         super.onStartCommand(intent, flags, startId);
+        requestActivityUpdatesButtonHandler();
         return START_STICKY;
     }
 
@@ -69,7 +70,6 @@ public class BackgroundDetectedActivitiesService extends Service {
                         .show();
             }
         });
-
         task.addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {

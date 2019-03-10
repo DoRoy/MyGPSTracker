@@ -10,15 +10,17 @@ import mygpstracker.android.mygpstracker.BackgroundServicePackage.ABackgroundSer
 import mygpstracker.android.mygpstracker.Battery.BatteryInfoWrapper;
 import mygpstracker.android.mygpstracker.Battery.MyBatteryInfo;
 
+/**
+ * A Background service that collects information about the battery.
+ */
 public class BatteryInfoBackgroundService extends ABackgroundService {
 
     private MyBatteryInfo myBatteryInfo;
 
     @Override
     public void onCreate() {
-
         myBatteryInfo = new MyBatteryInfo(this);
-        setPeriod(getDoubleInMinutes(5));
+        setPeriod(getDoubleInMinutes(10));
         super.onCreate();
     }
 
